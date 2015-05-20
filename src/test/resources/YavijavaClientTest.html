@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Test File</title>
+</head>
+<body>
+Your Mom.
+<textarea cols="20" rows="10" name="wsdl-textarea" wrap="off" readonly="1" id="wsdl-textarea">
+    <complexType xmlns="http://www.w3.org/2001/XMLSchema" xmlns:vim25="urn:vim25" name="BatchResult">
+        <complexContent>
+            <extension base="vim25:DynamicData">
+                <sequence>
+                    <element name="result" type="xsd:string"/>
+                    <element name="hostKey" type="xsd:string"/>
+                    <element name="ds" type="vim25:ManagedObjectReference" minOccurs="0"/>
+                    <element name="fault" type="vim25:LocalizedMethodFault" minOccurs="0"/>
+                </sequence>
+            </extension>
+        </complexContent>
+    </complexType>
+</textarea>
+</body>
+</html>
