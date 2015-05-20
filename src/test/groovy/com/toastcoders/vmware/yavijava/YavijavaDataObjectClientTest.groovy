@@ -1,5 +1,6 @@
 package com.toastcoders.vmware.yavijava
 
+import com.toastcoders.vmware.yavijava.contracts.HTMLClient
 import org.jsoup.nodes.Document
 import org.junit.Test
 

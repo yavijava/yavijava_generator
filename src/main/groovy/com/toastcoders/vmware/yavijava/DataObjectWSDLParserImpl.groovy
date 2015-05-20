@@ -1,5 +1,6 @@
 package com.toastcoders.vmware.yavijava
 
+import com.toastcoders.vmware.yavijava.contracts.WSDLParser
 import com.toastcoders.vmware.yavijava.data.DataObject
 import com.toastcoders.vmware.yavijava.data.Property
 

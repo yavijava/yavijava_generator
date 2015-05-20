@@ -1,4 +1,4 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.contracts
 
 /**
  * Created by Michael Rice on 5/19/15.
