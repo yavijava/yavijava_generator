@@ -74,4 +74,20 @@ class YavijavaDataObjectHTMLClient extends YavijavaHTMLClientAbs {
         Element textArea = document.select("textarea[name=wsdl-textarea]").first()
         return textArea.text()
     }
+
+    Map getNewDataObjects() {
+        assert document != null
+        log.debug("Fetching new DataObjects from Document")
+        Element table = document.select("table").first()
+        Element[] tRows = table.select("tr")
+        Map retMap = [:]
+        tRows.each { row ->
+            Element[] cols = row.select("td")
+            cols.each { col ->
+                Element link = col.select("a").first()
+                retMap.put(link.text(), link.attr("href"))
+            }
+        }
+        return retMap
+    }
 }
