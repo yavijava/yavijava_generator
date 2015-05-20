@@ -1,7 +1,7 @@
 package com.toastcoders.vmware.yavijava
 
 /**
- * Created by Michael Rice on 5/19/15.
+ * Created by Michael Rice on 5/20/15.
  *
  * Copyright 2015 Michael Rice
  *
@@ -17,7 +17,15 @@ package com.toastcoders.vmware.yavijava
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-interface WSDLParser {
+class WriteJavaClass {
 
-    public void parse(String wsdl)
+    public static void writeFile(String name, String contents) {
+        File fileName = new File(name)
+        if (fileName.createNewFile()) {
+            assert fileName.canWrite()
+            fileName.withWriter("utf-8") { writer ->
+                writer.write(contents)
+            }
+        }
+    }
 }

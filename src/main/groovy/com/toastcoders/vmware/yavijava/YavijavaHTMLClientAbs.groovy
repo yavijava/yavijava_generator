@@ -1,5 +1,6 @@
 package com.toastcoders.vmware.yavijava
 
+import com.toastcoders.vmware.yavijava.contracts.HTMLClient
 import org.apache.log4j.Logger
 import org.jsoup.Jsoup
 

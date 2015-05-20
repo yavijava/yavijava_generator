@@ -1,4 +1,4 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.contracts
 
 import org.jsoup.Connection
 import org.jsoup.nodes.Document
