@@ -47,6 +47,9 @@ class DataObjectWSDLParserImpl implements WSDLParser {
             if (objType == "string") {
                 objType = objType.capitalize()
             }
+            if (it.'@maxOccurs' == 'unbounded') {
+                objType = objType + "[]"
+            }
             if (it.'@minOccurs' == 'unbounded') {
                 objType = objType + "[]"
             }
