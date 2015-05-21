@@ -28,10 +28,15 @@ To run the tests execute:
     ./gradlew test
 
 ## Current Status
-The application is currently Alpha and does not function at all.
+The application is currently Alpha use with caution.
 
 ## Usage
-TBD
+    ./gradelw fatJar
+    java -jar build/libs/yavijava_generator-1.0-SNAPSHOT.jar --dest /Users/errr/temp/ --source /Users/errr/programs/java/yavijava.github.io/docs/new-do-types-landing.html
+
+This would build a jar containing all deps needed to run the app.
+--dest is the output directory where generated code will be placed
+--source is the path to the dataobjects file 
 
 ## License
 This application is released under the terms of the Apache 2.0 license. 
