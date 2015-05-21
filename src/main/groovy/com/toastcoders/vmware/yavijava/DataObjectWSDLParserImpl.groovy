@@ -47,6 +47,9 @@ class DataObjectWSDLParserImpl implements WSDLParser {
             if (objType == "string") {
                 objType = objType.capitalize()
             }
+            else if (objType == "base64Binary") {
+                objType = "byte[]"
+            }
             if (it.'@maxOccurs' == 'unbounded') {
                 objType = objType + "[]"
             }
