@@ -1,4 +1,4 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.parsers
 
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
 import com.toastcoders.vmware.yavijava.data.DataObject
@@ -49,6 +49,15 @@ class DataObjectWSDLParserImpl implements WSDLParser {
             }
             else if (objType == "base64Binary") {
                 objType = "byte[]"
+            }
+            else if (objType == "dateTime") {
+                objType = "Calendar"
+            }
+            else if (objType == "int" && it."@minOccurs" == "0") {
+                objType = "Integer"
+            }
+            else if (objType == "anyType") {
+                objType = "Object"
             }
             if (it.'@maxOccurs' == 'unbounded') {
                 objType = objType + "[]"

@@ -1,5 +1,6 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.data
 
+import com.toastcoders.vmware.yavijava.contracts.YavijavaHTMLClientAbs
 import org.apache.log4j.Logger
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -86,6 +87,24 @@ class YavijavaDataObjectHTMLClient extends YavijavaHTMLClientAbs {
             cols.each { col ->
                 Element link = col.select("a").first()
                 retMap.put(link.text(), link.attr("href"))
+            }
+        }
+        return retMap
+    }
+
+    Map getAllDataObjects() {
+        assert document != null
+        log.debug("Fetching new DataObjects from Document")
+        Element[] tables = document.select("table")
+        Map retMap = [:]
+        tables.each { table ->
+            Element[] tRows = table.select("tr")
+            tRows.each { row ->
+                Element col = row?.select("td")?.first()
+                Element link = col?.select("a")?.first()
+                if (link && !link.attr("href").toString().contains("#")) {
+                    retMap.put(link.text(), link.attr("href"))
+                }
             }
         }
         return retMap
