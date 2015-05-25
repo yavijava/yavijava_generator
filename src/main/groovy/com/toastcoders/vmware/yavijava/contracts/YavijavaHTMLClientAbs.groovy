@@ -1,7 +1,6 @@
 package com.toastcoders.vmware.yavijava.contracts
 
-import com.toastcoders.vmware.yavijava.YavijavaDataObjectHTMLClient
-import com.toastcoders.vmware.yavijava.contracts.HTMLClient
+import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
 import org.apache.log4j.Logger
 import org.jsoup.Jsoup
 

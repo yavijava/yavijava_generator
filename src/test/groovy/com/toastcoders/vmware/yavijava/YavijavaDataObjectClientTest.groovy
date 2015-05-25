@@ -1,6 +1,7 @@
 package com.toastcoders.vmware.yavijava
 
 import com.toastcoders.vmware.yavijava.contracts.HTMLClient
+import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
 import org.jsoup.nodes.Document
 import org.junit.Test
 
@@ -62,5 +63,14 @@ public class YavijavaDataObjectClientTest {
         HTMLClient client = new YavijavaDataObjectHTMLClient(htmlFile)
         Map newDataObjects = client.getNewDataObjects()
         assert newDataObjects.size() == 132
+    }
+
+    @Test
+    public void testGetAllDataObjects() {
+        File htmlFile = new File("src/test/resources/new-do-types-landing.html")
+        assert htmlFile.canRead()
+        HTMLClient client = new YavijavaDataObjectHTMLClient(htmlFile)
+        Map newDataObjects = client.getAllDataObjects()
+        assert newDataObjects.size() == 221
     }
 }

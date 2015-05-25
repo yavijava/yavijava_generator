@@ -23,6 +23,12 @@ class DynamicDataTemplate {
         return "package com.vmware.vim25;\n"
     }
 
+    public static String getImports() {
+        String imports = "import lombok.Getter;\n"
+        imports += "import lombok.Setter;\n"
+        return imports
+    }
+
     public static String getLicense() {
         Date today = new Date()
         return """
@@ -50,11 +56,11 @@ class DynamicDataTemplate {
         return "public class ${name} extends ${extendsBase} {\n"
     }
     public static String getPropertyType(String type, String name) {
-        return "public ${type} ${name};\n\n"
+        return "@Getter @Setter public ${type} ${name};\n"
     }
 
     public static String getMethodCreator(String type, String name) {
-        return """public ${type} get${name.capitalize()}() {\n        return ${name};\n    }\n\n"""
+        return """public ${type} get${name.capitalize()}() {\n        return this.${name};\n    }\n\n"""
     }
 
     public static String setMethodCreator(String type, String name) {

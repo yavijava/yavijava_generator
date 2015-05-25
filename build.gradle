@@ -28,6 +28,12 @@ sourceSets {
         groovy {
         }
     }
+    test {
+        java {
+        }
+        groovy {
+        }
+    }
 }
 
 task fatJar(type: Jar) {
