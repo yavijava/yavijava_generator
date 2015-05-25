@@ -1,4 +1,4 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.parsers
 
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
 import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
