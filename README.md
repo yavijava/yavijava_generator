@@ -3,7 +3,7 @@
 
 # yavijava_generator
 
-A code generator writen in Groovy using [jsoup](http://jsoup.org/) to 
+A code generator written in Groovy using [jsoup](http://jsoup.org/) to 
 parse the HTML documentation provided by VMWare that is used to generate 
 code for [yavjava](http://yavijava.com).
 
