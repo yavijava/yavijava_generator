@@ -1,5 +1,6 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.data
 
+import com.toastcoders.vmware.yavijava.contracts.YavijavaHTMLClientAbs
 import org.apache.log4j.Logger
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -61,33 +62,5 @@ class YavijavaDataObjectHTMLClient extends YavijavaHTMLClientAbs {
     @Override
     Document getDocument() {
         return document
-    }
-
-    /**
-     * Returns the WSDL XML def from a DataObject
-     * @return
-     */
-    @Override
-    String getWSDLDefXML() {
-        assert document != null
-        log.debug("Fetching WSDL Def from Document.")
-        Element textArea = document.select("textarea[name=wsdl-textarea]").first()
-        return textArea.text()
-    }
-
-    Map getNewDataObjects() {
-        assert document != null
-        log.debug("Fetching new DataObjects from Document")
-        Element table = document.select("table").first()
-        Element[] tRows = table.select("tr")
-        Map retMap = [:]
-        tRows.each { row ->
-            Element[] cols = row.select("td")
-            cols.each { col ->
-                Element link = col.select("a").first()
-                retMap.put(link.text(), link.attr("href"))
-            }
-        }
-        return retMap
     }
 }

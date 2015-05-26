@@ -1,9 +1,8 @@
 package com.toastcoders.vmware.yavijava
 
-import com.toastcoders.vmware.yavijava.contracts.HTMLClient
-import com.toastcoders.vmware.yavijava.contracts.WSDLParser
-import com.toastcoders.vmware.yavijava.data.DataObject
-import com.toastcoders.vmware.yavijava.data.DynamicDataTemplate
+import com.toastcoders.vmware.yavijava.contracts.Generator
+import com.toastcoders.vmware.yavijava.generator.DataObjectGeneratorImpl
+import com.toastcoders.vmware.yavijava.generator.EnumGeneratorImpl
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -30,42 +29,51 @@ class Main {
         cli.h(longOpt: 'help', 'usage information', required: false)
         cli._(longOpt: 'source', 'Source to read from', required: true, args: 1)
         cli._(longOpt: 'dest', 'Destination path for where to write new files', required: true, args: 1)
+        cli._(longOpt: 'type',
+            'Type of objects to create. Valid values are one of either: dataobj, fault, enum',
+            required: true, args: 1
+        )
+        cli.a(longOpt: 'all', 'Generate new and changed. Default is new only')
         def opt = cli.parse(args)
-        assert opt != null
-        if (opt.h) {
+
+        if(!opt) {
+            return
+        }
+
+        if (opt?.h) {
             cli.usage()
             System.exit(1)
         }
+
+        boolean all = false
+        if (opt?.a) {
+            all = true
+        }
+
+        List valid = ["dataobj", "fault", "enum"]
+        if (!(opt.type in valid)) {
+            println "Invalid type detected. ${opt.type} not supported."
+            cli.usage()
+            System.exit(1)
+        }
+        // all options verified. time to spawn a generator
+        // to make some classes for us.
         String source = opt.source
         String dest = opt.dest
-        // This should be the new-do-types-landing.html
-        File htmlFile = new File(source)
-        String base = htmlFile.getParent()
-        HTMLClient client = new YavijavaDataObjectHTMLClient(htmlFile)
-        Map newDataObjects = client.getNewDataObjects()
-
-        //Iterate through the map to open each new DO html file
-        newDataObjects.each { name, doHTMLFile ->
-            File doFile = new File(base + htmlFile.separator + doHTMLFile)
-            assert doFile.canRead()
-            WSDLParser parser = new DataObjectWSDLParserImpl()
-            String wsdl = new YavijavaDataObjectHTMLClient(doFile).WSDLDefXML
-            parser.parse(wsdl)
-            DataObject dataObject = parser.dataObject
-            String javaClass
-            javaClass = DynamicDataTemplate.getPackage()
-            javaClass += DynamicDataTemplate.getLicense()
-            javaClass += DynamicDataTemplate.getClassDef(dataObject.name, dataObject.extendsBase)
-            dataObject.objProperties.each {
-                javaClass += "    ${DynamicDataTemplate.getPropertyType(it.propType, it.name)}"
-            }
-            dataObject.objProperties.each {
-                javaClass += "    ${DynamicDataTemplate.getMethodCreator(it.propType, it.name)}"
-                javaClass += "    ${DynamicDataTemplate.setMethodCreator(it.propType, it.name)}"
-            }
-            javaClass += DynamicDataTemplate.closeClass()
-            String fileName = dest + dataObject.name + ".java"
-            WriteJavaClass.writeFile(fileName, javaClass)
+        switch (opt.type) {
+            case "dataobj":
+                Generator dataObjectGenerator = new DataObjectGeneratorImpl(source, dest)
+                dataObjectGenerator.generate(all)
+                break
+            case "fault":
+                Generator dataObjectGenerator = new DataObjectGeneratorImpl(source, dest)
+                dataObjectGenerator.generate(all)
+                break
+            default:
+                // enum time
+                Generator enumGenerator = new EnumGeneratorImpl(source, dest)
+                enumGenerator.generate(all)
+                break
         }
     }
 }

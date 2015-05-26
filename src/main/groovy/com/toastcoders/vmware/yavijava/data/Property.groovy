@@ -23,6 +23,10 @@ class Property {
     public String propType
     public int minOccurs = 1
 
+    public Property(String name) {
+        this.name = name
+    }
+
     public Property(String name, String type) {
         this.name = name
         this.propType = type

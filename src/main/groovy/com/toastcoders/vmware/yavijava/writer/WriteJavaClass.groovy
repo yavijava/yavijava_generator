@@ -1,4 +1,4 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.writer
 
 /**
  * Created by Michael Rice on 5/20/15.
