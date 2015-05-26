@@ -1,8 +1,9 @@
-package com.toastcoders.vmware.yavijava
+package com.toastcoders.vmware.yavijava.contracts
 
-import com.toastcoders.vmware.yavijava.contracts.HTMLClient
+import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
 import org.apache.log4j.Logger
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -68,5 +69,51 @@ abstract class YavijavaHTMLClientAbs implements HTMLClient {
         document = Jsoup.parse((html.toString() as String))
         assert document != null
         log.trace("Loaded HTML from string successfully.")
+    }
+
+    /**
+     * Returns the WSDL XML def from a DocumentObject
+     * @return
+     */
+    @Override
+    String getWSDLDefXML() {
+        assert document != null
+        log.debug("Fetching WSDL Def from Document.")
+        Element textArea = document.select("textarea[name=wsdl-textarea]").first()
+        return textArea.text()
+    }
+
+    Map getNewObjects() {
+        assert document != null
+        log.debug("Fetching new DataObjects from Document")
+        Element table = document.select("table").first()
+        Element[] tRows = table.select("tr")
+        Map retMap = [:]
+        tRows.each { row ->
+            Element[] cols = row.select("td")
+            cols.each { col ->
+                Element link = col.select("a").first()
+                retMap.put(link.text(), link.attr("href"))
+            }
+        }
+        return retMap
+    }
+
+    Map getAllObjects() {
+        assert document != null
+        log.debug("Fetching new DataObjects from Document")
+        Element[] tables = document.select("table")
+        Map retMap = [:]
+        tables.each { table ->
+            Element[] tRows = table.select("tr")
+            tRows.each { row ->
+                Element col = row?.select("td")?.first()
+                Element link = col?.select("a")?.first()
+                if (link && !link.attr("href").toString().contains("#")) {
+                    retMap.put(link.text(), link.attr("href"))
+                }
+            }
+        }
+        return retMap
     }
 }
