@@ -28,15 +28,18 @@ To run the tests execute:
     ./gradlew test
 
 ## Current Status
-The application is currently Alpha use with caution.
+The application is currently Beta use with caution. It has been tested with vSphere 6.0
 
 ## Usage
     ./gradelw fatJar
-    java -jar build/libs/yavijava_generator-1.0-SNAPSHOT.jar --dest /Users/errr/temp/ --source /Users/errr/programs/java/yavijava.github.io/docs/new-do-types-landing.html
+    java -jar build/libs/yavijava_generator-1.0.jar --dest /Users/errr/temp/ --source /Users/errr/programs/java/yavijava.github.io/docs/new-do-types-landing.html --type dataobj --all
 
 This would build a jar containing all deps needed to run the app.
---dest is the output directory where generated code will be placed
---source is the path to the dataobjects file 
+
+    --dest is the output directory where generated code will be placed
+    --source is the path to the dataobjects file
+    --type is the type of file to generate. Valid values are one of dataobj, fault, enum
+    --all sets a flag to generate all data objects found on the source html page. That means new and existing with new properties
 
 ## License
 This application is released under the terms of the Apache 2.0 license. 
@@ -48,7 +51,7 @@ install Gradle to use it. All you need is a JDK. I include the Gradle
 Wrapper so everything is included by downloading the repo. To build 
 the source code on Linux or Mac OSX:
 
-    ./gradlew build
+    ./gradlew fatJar
 
 On Windows please use the ```gradlew.bat``` file.
 
