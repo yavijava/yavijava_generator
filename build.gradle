@@ -1,8 +1,7 @@
 group 'com.toastcoders.vmware'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 apply plugin: 'groovy'
-//apply plugin: 'java'
 apply plugin:'application'
 
 sourceCompatibility = 1.6
@@ -42,7 +41,6 @@ task fatJar(type: Jar) {
                 'Implementation-Version': version,
                 'Main-Class': 'com.toastcoders.vmware.yavijava.Main'
     }
-    //baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
