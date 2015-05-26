@@ -1,12 +1,12 @@
 package com.toastcoders.vmware.yavijava.generator
 
-import com.toastcoders.vmware.yavijava.contracts.HTMLClient
-import com.toastcoders.vmware.yavijava.parsers.DataObjectWSDLParserImpl
-import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
-import com.toastcoders.vmware.yavijava.contracts.WSDLParser
 import com.toastcoders.vmware.yavijava.contracts.Generator
+import com.toastcoders.vmware.yavijava.contracts.HTMLClient
+import com.toastcoders.vmware.yavijava.contracts.WSDLParser
 import com.toastcoders.vmware.yavijava.data.DataObject
-import com.toastcoders.vmware.yavijava.data.DynamicDataTemplate
+import com.toastcoders.vmware.yavijava.data.EnumJavaTemplate
+import com.toastcoders.vmware.yavijava.data.YavijavaEnumObjectHTMLClient
+import com.toastcoders.vmware.yavijava.parsers.EnumWSDLParserImpl
 import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
 
 /**
@@ -24,12 +24,12 @@ import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-class DataObjectGeneratorImpl implements Generator {
+class EnumGeneratorImpl implements Generator {
 
     String source
     String dest
 
-    DataObjectGeneratorImpl(String source, String dest) {
+    EnumGeneratorImpl(String source, String dest) {
         this.source = source
         this.dest = dest
     }
@@ -40,14 +40,13 @@ class DataObjectGeneratorImpl implements Generator {
     }
 
     @Override
-    public void generate(boolean all) {
-        // This should be the new-do-types-landing.html
+    void generate(boolean all) {
         File htmlFile = loadFile(this.source)
         String base = htmlFile.getParent()
         HTMLClient client = loadHTMLClient(htmlFile)
         Map myDataObjects
         if (all) {
-           myDataObjects = client.getAllObjects()
+            myDataObjects = client.getAllObjects()
         }
         else {
             myDataObjects = client.getNewObjects()
@@ -61,14 +60,25 @@ class DataObjectGeneratorImpl implements Generator {
             parser.parse(wsdl)
             DataObject dataObject = parser.dataObject
             String javaClass
-            javaClass = DynamicDataTemplate.getPackageName()
-            javaClass += DynamicDataTemplate.getImports()
-            javaClass += DynamicDataTemplate.getLicense()
-            javaClass += DynamicDataTemplate.getClassDef(dataObject.name, dataObject.extendsBase)
-            dataObject.objProperties.each {
-                javaClass += "    ${DynamicDataTemplate.getPropertyType(it.propType, it.name)}"
+            javaClass = EnumJavaTemplate.getPackageName()
+            javaClass += EnumJavaTemplate.getLicense()
+            javaClass += EnumJavaTemplate.getClassDef(dataObject.name)
+            String propEnding = ","
+            int numProps = dataObject.objProperties.size()
+            if (numProps == 1) {
+                propEnding = ";"
             }
-            javaClass += DynamicDataTemplate.closeClass()
+            dataObject.objProperties.each {
+                javaClass += EnumJavaTemplate.getEnumProp(it.toString(), propEnding)
+                numProps -= 1
+                if (numProps == 1) {
+                    propEnding = ";"
+                }
+            }
+            javaClass += EnumJavaTemplate.getPrivVal()
+            javaClass += EnumJavaTemplate.constructorGenerator(dataObject.name)
+            javaClass += EnumJavaTemplate.toStringGenerator()
+            javaClass += EnumJavaTemplate.closeClass()
             String fileName = dest + dataObject.name + ".java"
             WriteJavaClass.writeFile(fileName, javaClass)
         }
@@ -79,11 +89,11 @@ class DataObjectGeneratorImpl implements Generator {
     }
 
     protected HTMLClient loadHTMLClient(File htmlFile) {
-        return new YavijavaDataObjectHTMLClient(htmlFile)
+        return new YavijavaEnumObjectHTMLClient(htmlFile)
     }
 
     protected WSDLParser loadWSDLParser() {
-        return new DataObjectWSDLParserImpl()
+        return new EnumWSDLParserImpl()
     }
 
     protected String loadWSDLFromDOFile(File doFile) {

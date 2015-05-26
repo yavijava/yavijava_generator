@@ -17,7 +17,7 @@ package com.toastcoders.vmware.yavijava.data;
  */
 public class BaseTemplate {
 
-    public static String getPackage() {
+    public static String getPackageName() {
         return "package com.vmware.vim25;\n"
     }
 
@@ -26,6 +26,8 @@ public class BaseTemplate {
         return """
 /**
  * Created by Michael Rice on ${today}
+ * This code is auto generated using yavijava_generator
+ * https://github.com/yavijava/yavijava_generator
  *
  * Copyright 2015 Michael Rice
  *

@@ -61,7 +61,7 @@ public class YavijavaDataObjectClientTest {
         File htmlFile = new File("src/test/resources/new-do-types-landing.html")
         assert htmlFile.canRead()
         HTMLClient client = new YavijavaDataObjectHTMLClient(htmlFile)
-        Map newDataObjects = client.getNewDataObjects()
+        Map newDataObjects = client.getNewObjects()
         assert newDataObjects.size() == 132
     }
 
@@ -70,7 +70,7 @@ public class YavijavaDataObjectClientTest {
         File htmlFile = new File("src/test/resources/new-do-types-landing.html")
         assert htmlFile.canRead()
         HTMLClient client = new YavijavaDataObjectHTMLClient(htmlFile)
-        Map newDataObjects = client.getAllDataObjects()
+        Map newDataObjects = client.getAllObjects()
         assert newDataObjects.size() == 221
     }
 }

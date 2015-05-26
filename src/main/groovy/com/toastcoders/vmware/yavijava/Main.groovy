@@ -2,6 +2,7 @@ package com.toastcoders.vmware.yavijava
 
 import com.toastcoders.vmware.yavijava.contracts.Generator
 import com.toastcoders.vmware.yavijava.generator.DataObjectGeneratorImpl
+import com.toastcoders.vmware.yavijava.generator.EnumGeneratorImpl
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -70,6 +71,8 @@ class Main {
                 break
             default:
                 // enum time
+                Generator enumGenerator = new EnumGeneratorImpl(source, dest)
+                enumGenerator.generate(all)
                 break
         }
     }

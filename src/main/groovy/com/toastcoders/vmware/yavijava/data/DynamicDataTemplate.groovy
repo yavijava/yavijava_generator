@@ -28,6 +28,7 @@ class DynamicDataTemplate extends BaseTemplate {
     public static String getClassDef(String name, String extendsBase) {
         return "public class ${name} extends ${extendsBase} {\n"
     }
+
     public static String getPropertyType(String type, String name) {
         return "@Getter @Setter public ${type} ${name};\n"
     }
