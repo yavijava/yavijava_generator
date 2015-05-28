@@ -1,5 +1,5 @@
 group 'com.toastcoders.vmware'
-version '1.0'
+version '1.1-DEV'
 
 apply plugin: 'groovy'
 apply plugin:'application'

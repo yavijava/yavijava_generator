@@ -26,7 +26,12 @@ class DynamicDataTemplate extends BaseTemplate {
     }
 
     public static String getClassDef(String name, String extendsBase) {
-        return "public class ${name} extends ${extendsBase} {\n"
+        String classDef = "public class ${name} extends ${extendsBase} {\n"
+        if (!extendsBase) {
+            classDef = "public class ${name} {\n"
+        }
+
+        return classDef
     }
 
     public static String getPropertyType(String type, String name) {
