@@ -3,6 +3,7 @@ package com.toastcoders.vmware.yavijava
 import com.toastcoders.vmware.yavijava.contracts.Generator
 import com.toastcoders.vmware.yavijava.generator.DataObjectGeneratorImpl
 import com.toastcoders.vmware.yavijava.generator.EnumGeneratorImpl
+import com.toastcoders.vmware.yavijava.generator.SPBMDataObjectGeneratorImpl
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -30,7 +31,7 @@ class Main {
         cli._(longOpt: 'source', 'Source to read from', required: true, args: 1)
         cli._(longOpt: 'dest', 'Destination path for where to write new files', required: true, args: 1)
         cli._(longOpt: 'type',
-            'Type of objects to create. Valid values are one of either: dataobj, fault, enum',
+            'Type of objects to create. Valid values are one of either: dataobj, fault, enum, spbm_do',
             required: true, args: 1
         )
         cli.a(longOpt: 'all', 'Generate new and changed. Default is new only')
@@ -50,7 +51,7 @@ class Main {
             all = true
         }
 
-        List valid = ["dataobj", "fault", "enum"]
+        List valid = ["dataobj", "fault", "enum", "spbm_do"]
         if (!(opt.type in valid)) {
             println "Invalid type detected. ${opt.type} not supported."
             cli.usage()
@@ -69,11 +70,13 @@ class Main {
                 Generator dataObjectGenerator = new DataObjectGeneratorImpl(source, dest)
                 dataObjectGenerator.generate(all)
                 break
+            case "spbm_do":
+                Generator spbmDoGenerator = new SPBMDataObjectGeneratorImpl(source, dest)
+                spbmDoGenerator.generate(all)
+                break
             default:
-                // enum time
                 Generator enumGenerator = new EnumGeneratorImpl(source, dest)
                 enumGenerator.generate(all)
-                break
         }
     }
 }
