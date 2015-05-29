@@ -24,8 +24,13 @@ class EnumWSDLParserImpl implements WSDLParser {
 
     @Override
     void parse(String wsdl) {
+        parse(wsdl, ['vim25': 'xmlns:vim25="urn:vim25"'])
+    }
+
+    @Override
+    void parse(String wsdl, Map nameSpace) {
         XmlSlurper slurper = new XmlSlurper()
-        def doc = slurper.parseText(wsdl).declareNamespace(['vim25': 'xmlns:vim25="urn:vim25"'])
+        def doc = slurper.parseText(wsdl).declareNamespace(nameSpace)
         String className = doc."@name"
         dataObject = new DataObject()
         dataObject.name = className

@@ -1,13 +1,9 @@
 package com.toastcoders.vmware.yavijava.generator
 
-import com.toastcoders.vmware.yavijava.contracts.Generator
 import com.toastcoders.vmware.yavijava.contracts.HTMLClient
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
-import com.toastcoders.vmware.yavijava.data.DataObject
-import com.toastcoders.vmware.yavijava.data.DynamicDataTemplate
 import com.toastcoders.vmware.yavijava.data.SPBMDataObjectHTMLClient
-import com.toastcoders.vmware.yavijava.parsers.SPBMDataObjectWSDLParserImpl
-import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
+import com.toastcoders.vmware.yavijava.parsers.DataObjectWSDLParserImpl
 
 /**
  *  Copyright 2015 Michael Rice <michael@michaelrice.org>
@@ -24,7 +20,7 @@ import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-class SPBMDataObjectGeneratorImpl implements Generator {
+class SPBMDataObjectGeneratorImpl extends DataObjectGeneratorAbs {
 
     String source
     String dest
@@ -32,46 +28,6 @@ class SPBMDataObjectGeneratorImpl implements Generator {
     SPBMDataObjectGeneratorImpl(String source, String dest) {
         this.source = source
         this.dest = dest
-    }
-
-    @Override
-    void generate() {
-        generate(false)
-    }
-
-    @Override
-    public void generate(boolean all) {
-        // This should be the new-do-types-landing.html
-        File htmlFile = loadFile(this.source)
-        String base = htmlFile.getParent()
-        HTMLClient client = loadHTMLClient(htmlFile)
-        Map myDataObjects
-        if (all) {
-            myDataObjects = client.getAllObjects()
-        }
-        else {
-            myDataObjects = client.getNewObjects()
-        }
-        //Iterate through the map to open each new DO html file
-        myDataObjects.each { name, doHTMLFile ->
-            File doFile = loadFile(base + htmlFile.separator + doHTMLFile)
-            assert doFile.canRead()
-            WSDLParser parser = loadWSDLParser()
-            String wsdl = loadWSDLFromDOFile(doFile)
-            parser.parse(wsdl)
-            DataObject dataObject = parser.dataObject
-            String javaClass
-            javaClass = DynamicDataTemplate.getPackageName("com.vmware.spbm")
-            javaClass += DynamicDataTemplate.getImports()
-            javaClass += DynamicDataTemplate.getLicense()
-            javaClass += DynamicDataTemplate.getClassDef(dataObject.name, dataObject.extendsBase)
-            dataObject.objProperties.each {
-                javaClass += "    ${DynamicDataTemplate.getPropertyType(it.propType, it.name)}"
-            }
-            javaClass += DynamicDataTemplate.closeClass()
-            String fileName = dest + dataObject.name + ".java"
-            WriteJavaClass.writeFile(fileName, javaClass)
-        }
     }
 
     protected File loadFile(String source) {
@@ -83,7 +39,7 @@ class SPBMDataObjectGeneratorImpl implements Generator {
     }
 
     protected WSDLParser loadWSDLParser() {
-        return new SPBMDataObjectWSDLParserImpl()
+        return new DataObjectWSDLParserImpl()
     }
 
     protected String loadWSDLFromDOFile(File doFile) {
