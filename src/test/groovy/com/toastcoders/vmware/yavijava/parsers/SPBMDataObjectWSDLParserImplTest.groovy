@@ -20,10 +20,10 @@ import com.toastcoders.vmware.yavijava.data.SPBMDataObjectHTMLClient
  */
 class SPBMDataObjectWSDLParserImplTest extends GroovyTestCase {
     void testParse() {
-        WSDLParser parser = new SPBMDataObjectWSDLParserImpl()
+        WSDLParser parser = new DataObjectWSDLParserImpl()
         File html = new File('src/test/resources/SPBMDataObjectTest.html')
         String wsdl = new SPBMDataObjectHTMLClient(html).WSDLDefXML
-        parser.parse(wsdl)
+        parser.parse(wsdl, ['pbm': 'xmlns:pbm="urn:pbm"'])
         assert parser.dataObject.name == "PbmServiceInstanceContent"
     }
 }
