@@ -19,4 +19,5 @@ interface Generator {
 
     public void generate()
     public void generate(boolean all)
+    public void generate(boolean all,  String packageName, Map nameSpace)
 }

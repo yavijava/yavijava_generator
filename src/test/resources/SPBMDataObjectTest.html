@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Test File</title>
+</head>
+<body>
+Your Mom.
+<textarea cols="20" rows="10" name="wsdl-textarea" wrap="off" readonly="1" id="wsdl-textarea">
+    <complexType xmlns="http://www.w3.org/2001/XMLSchema" xmlns:pbm="urn:pbm" name="PbmServiceInstanceContent">
+        <complexContent>
+            <extension base="pbm:DynamicData">
+                <sequence>
+                    <element name="aboutInfo" type="pbm:PbmAboutInfo"/>
+                    <element name="sessionManager" type="pbm:ManagedObjectReference"/>
+                    <element name="capabilityMetadataManager" type="pbm:ManagedObjectReference"/>
+                    <element name="profileManager" type="pbm:ManagedObjectReference"/>
+                    <element name="complianceManager" type="pbm:ManagedObjectReference"/>
+                    <element name="placementSolver" type="pbm:ManagedObjectReference"/>
+                </sequence>
+            </extension>
+        </complexContent>
+    </complexType>
+</textarea>
+</body>
+</html>

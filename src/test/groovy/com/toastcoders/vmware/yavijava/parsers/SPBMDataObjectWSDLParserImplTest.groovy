@@ -1,7 +1,7 @@
 package com.toastcoders.vmware.yavijava.parsers
 
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
-import com.toastcoders.vmware.yavijava.data.DataObject
+import com.toastcoders.vmware.yavijava.data.SPBMDataObjectHTMLClient
 
 /**
  *  Copyright 2015 Michael Rice <michael@michaelrice.org>
@@ -18,26 +18,12 @@ import com.toastcoders.vmware.yavijava.data.DataObject
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-class EnumWSDLParserImpl implements WSDLParser {
-
-    DataObject dataObject
-
-    @Override
-    void parse(String wsdl) {
-        parse(wsdl, ['vim25': 'xmlns:vim25="urn:vim25"'])
-    }
-
-    @Override
-    void parse(String wsdl, Map nameSpace) {
-        XmlSlurper slurper = new XmlSlurper()
-        def doc = slurper.parseText(wsdl).declareNamespace(nameSpace)
-        String className = doc."@name"
-        dataObject = new DataObject()
-        dataObject.name = className
-        def props = doc."restriction"."enumeration"
-        props.each {
-            dataObject.objProperties << (it."@value" as String)
-        }
-        assert props.size() == dataObject.objProperties.size()
+class SPBMDataObjectWSDLParserImplTest extends GroovyTestCase {
+    void testParse() {
+        WSDLParser parser = new DataObjectWSDLParserImpl()
+        File html = new File('src/test/resources/SPBMDataObjectTest.html')
+        String wsdl = new SPBMDataObjectHTMLClient(html).WSDLDefXML
+        parser.parse(wsdl, ['pbm': 'xmlns:pbm="urn:pbm"'])
+        assert parser.dataObject.name == "PbmServiceInstanceContent"
     }
 }

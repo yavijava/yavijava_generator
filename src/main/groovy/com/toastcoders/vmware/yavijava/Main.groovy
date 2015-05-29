@@ -3,6 +3,8 @@ package com.toastcoders.vmware.yavijava
 import com.toastcoders.vmware.yavijava.contracts.Generator
 import com.toastcoders.vmware.yavijava.generator.DataObjectGeneratorImpl
 import com.toastcoders.vmware.yavijava.generator.EnumGeneratorImpl
+import com.toastcoders.vmware.yavijava.generator.SPBMDataObjectGeneratorImpl
+import com.toastcoders.vmware.yavijava.generator.SPBMEnumGeneratorImpl
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -30,7 +32,7 @@ class Main {
         cli._(longOpt: 'source', 'Source to read from', required: true, args: 1)
         cli._(longOpt: 'dest', 'Destination path for where to write new files', required: true, args: 1)
         cli._(longOpt: 'type',
-            'Type of objects to create. Valid values are one of either: dataobj, fault, enum',
+            'Type of objects to create. Valid values are one of either: dataobj, fault, enum, spbm_do, spbm_fault, spbm_enum',
             required: true, args: 1
         )
         cli.a(longOpt: 'all', 'Generate new and changed. Default is new only')
@@ -50,7 +52,7 @@ class Main {
             all = true
         }
 
-        List valid = ["dataobj", "fault", "enum"]
+        List valid = ["dataobj", "fault", "enum", "spbm_do", "spbm_fault", "spbm_enum"]
         if (!(opt.type in valid)) {
             println "Invalid type detected. ${opt.type} not supported."
             cli.usage()
@@ -63,17 +65,28 @@ class Main {
         switch (opt.type) {
             case "dataobj":
                 Generator dataObjectGenerator = new DataObjectGeneratorImpl(source, dest)
-                dataObjectGenerator.generate(all)
+                dataObjectGenerator.generate(all, "com.vmware.vim25", [vim25: 'xmlns:vim25="urn:vim25"'])
                 break
             case "fault":
                 Generator dataObjectGenerator = new DataObjectGeneratorImpl(source, dest)
-                dataObjectGenerator.generate(all)
+                dataObjectGenerator.generate(all, "com.vmware.vim25", [vim25: 'xmlns:vim25="urn:vim25"'])
+                break
+            case "spbm_do":
+                Generator spbmDoGenerator = new SPBMDataObjectGeneratorImpl(source, dest)
+                spbmDoGenerator.generate(all, "com.vmware.spbm", ['pbm': 'xmlns:pbm="urn:pbm"'])
+                break
+            case "spbm_fault":
+                Generator spbmDoGenerator = new SPBMDataObjectGeneratorImpl(source, dest)
+                spbmDoGenerator.generate(all, "com.vmware.spbm", ['pbm': 'xmlns:pbm="urn:pbm"'])
+                break
+            case "spbm_enum":
+                Generator spbmEnumGenerator = new SPBMEnumGeneratorImpl(source, dest)
+                spbmEnumGenerator.generate(all, "com.vmware.spbm", ['pbm': 'xmlns:pbm="urn:pbm"'])
                 break
             default:
-                // enum time
+                // enums for vim25 yavijava
                 Generator enumGenerator = new EnumGeneratorImpl(source, dest)
-                enumGenerator.generate(all)
-                break
+                enumGenerator.generate(all, "com.vmware.vim25", [vim25: 'xmlns:vim25="urn:vim25"'])
         }
     }
 }

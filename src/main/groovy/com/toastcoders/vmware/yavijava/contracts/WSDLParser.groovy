@@ -20,4 +20,5 @@ package com.toastcoders.vmware.yavijava.contracts
 interface WSDLParser {
 
     public void parse(String wsdl)
+    public void parse(String wsdl, Map nameSpace)
 }
