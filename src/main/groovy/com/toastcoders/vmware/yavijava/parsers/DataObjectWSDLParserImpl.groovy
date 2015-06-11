@@ -64,6 +64,9 @@ class DataObjectWSDLParserImpl implements WSDLParser {
             else if (objType == "anyType") {
                 objType = "Object"
             }
+            else if (objType == "long" && it."@minOccurs" == "0") {
+                objType = "Long"
+            }
             if (it.'@maxOccurs' == 'unbounded') {
                 objType = objType + "[]"
             }
