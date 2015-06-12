@@ -57,6 +57,10 @@ class DataObjectGeneratorAbs implements Generator {
             String javaClass
             javaClass = DynamicDataTemplate.getPackageName(packageName)
             javaClass += DynamicDataTemplate.getImports()
+            // look for calendar usage to include java.util.Calendar in imports
+            if (dataObject.objProperties.find {it.propType == "Calendar"}) {
+                javaClass += "import java.util.Calendar;\n"
+            }
             javaClass += DynamicDataTemplate.getLicense()
             javaClass += DynamicDataTemplate.getClassDef(dataObject.name, dataObject.extendsBase)
             dataObject.objProperties.each {
