@@ -68,6 +68,13 @@ class DataObjectWSDLParserImpl implements WSDLParser {
                 objType = "Long"
             }
             if (it.'@maxOccurs' == 'unbounded') {
+                // Array detected we need to switch back to native types
+                if (objType == "Long") {
+                    objType = "long"
+                }
+                else if (objType == "Integer") {
+                    objType = "int"
+                }
                 objType = objType + "[]"
             }
             if (it.'@minOccurs' == 'unbounded') {
