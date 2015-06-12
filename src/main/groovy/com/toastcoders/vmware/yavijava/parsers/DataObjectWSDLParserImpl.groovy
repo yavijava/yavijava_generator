@@ -27,8 +27,13 @@ class DataObjectWSDLParserImpl implements WSDLParser {
 
     @Override
     void parse(String wsdl) {
+        parse(wsdl, [vim25: 'xmlns:vim25="urn:vim25"'])
+    }
+
+    @Override
+    void parse(String wsdl, Map nameSpace) {
         XmlSlurper slurper = new XmlSlurper()
-        def doc = slurper.parseText(wsdl).declareNamespace(['vim25': 'xmlns:vim25="urn:vim25"'])
+        def doc = slurper.parseText(wsdl).declareNamespace(nameSpace)
         String className = doc."@name"
         dataObject = new DataObject()
         dataObject.name = className
@@ -59,7 +64,17 @@ class DataObjectWSDLParserImpl implements WSDLParser {
             else if (objType == "anyType") {
                 objType = "Object"
             }
+            else if (objType == "long" && it."@minOccurs" == "0") {
+                objType = "Long"
+            }
             if (it.'@maxOccurs' == 'unbounded') {
+                // Array detected we need to switch back to native types
+                if (objType == "Long") {
+                    objType = "long"
+                }
+                else if (objType == "Integer") {
+                    objType = "int"
+                }
                 objType = objType + "[]"
             }
             if (it.'@minOccurs' == 'unbounded') {

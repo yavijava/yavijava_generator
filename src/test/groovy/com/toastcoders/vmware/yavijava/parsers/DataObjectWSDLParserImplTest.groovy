@@ -1,8 +1,10 @@
 package com.toastcoders.vmware.yavijava.parsers
 
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
+import com.toastcoders.vmware.yavijava.data.Property
 import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
 import com.toastcoders.vmware.yavijava.parsers.DataObjectWSDLParserImpl
+import org.junit.Before
 import org.junit.Test
 
 /**
@@ -24,12 +26,44 @@ import org.junit.Test
  */
 public class DataObjectWSDLParserImplTest {
 
-    @Test
-    public void testParse() throws Exception {
-        WSDLParser parser = new DataObjectWSDLParserImpl()
+    WSDLParser parser
+    List props
+
+    @Before
+    public void setUp() throws Exception {
+        parser = new DataObjectWSDLParserImpl()
         File html = new File('src/test/resources/YavijavaClientTest.html')
         String wsdl = new YavijavaDataObjectHTMLClient(html).WSDLDefXML
         parser.parse(wsdl)
-        assert parser.dataObject.name == "BatchResult"
+        props = this.parser.dataObject.objProperties
+    }
+
+    @Test
+    public void testParse() throws Exception {
+        assert this.parser.dataObject.name == "BatchResult"
+    }
+
+    @Test
+    public void testParserCatchesLongObjectWhenNeeded() throws Exception {
+        Property myLongProp = props.find {it.name == "checkLong"} as Property
+        assert myLongProp.propType == "Long"
+    }
+
+    @Test
+    public void testParserMakesLongArrayCorrectly() throws Exception {
+        Property myLongArray = props.find {it.name == "longArray"} as Property
+        assert myLongArray.propType == "long[]"
+    }
+
+    @Test
+    public void testParserMakesIntegerWhenIntIsOptional() throws Exception {
+        Property myInt = props.find {it.name == "optionalInt"} as Property
+        assert myInt.propType == "Integer"
+    }
+
+    @Test
+    public void testParserMakesIntArrayWhenIntIsOptional() throws Exception {
+        Property myOptionalIntArray = props.find {it.name == "optionalIntArray"} as Property
+        assert myOptionalIntArray.propType == "int[]"
     }
 }

@@ -21,6 +21,10 @@ public class BaseTemplate {
         return "package com.vmware.vim25;\n"
     }
 
+    public static String getPackageName(String packageName) {
+        return "package ${packageName};\n"
+    }
+
     public static String getLicense() {
         Date today = new Date()
         return """

@@ -1,13 +1,9 @@
 package com.toastcoders.vmware.yavijava.generator
 
 import com.toastcoders.vmware.yavijava.contracts.HTMLClient
-import com.toastcoders.vmware.yavijava.parsers.DataObjectWSDLParserImpl
-import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
-import com.toastcoders.vmware.yavijava.contracts.Generator
-import com.toastcoders.vmware.yavijava.data.DataObject
-import com.toastcoders.vmware.yavijava.data.DynamicDataTemplate
-import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
+import com.toastcoders.vmware.yavijava.data.SPBMDataObjectHTMLClient
+import com.toastcoders.vmware.yavijava.parsers.EnumWSDLParserImpl
 
 /**
  *  Copyright 2015 Michael Rice <michael@michaelrice.org>
@@ -24,12 +20,12 @@ import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-class DataObjectGeneratorImpl extends DataObjectGeneratorAbs {
+class SPBMEnumGeneratorImpl extends EnumGeneratorAbs {
 
     String source
     String dest
 
-    DataObjectGeneratorImpl(String source, String dest) {
+    SPBMEnumGeneratorImpl(String source, String dest) {
         this.source = source
         this.dest = dest
     }
@@ -39,11 +35,11 @@ class DataObjectGeneratorImpl extends DataObjectGeneratorAbs {
     }
 
     protected HTMLClient loadHTMLClient(File htmlFile) {
-        return new YavijavaDataObjectHTMLClient(htmlFile)
+        return new SPBMDataObjectHTMLClient(htmlFile)
     }
 
     protected WSDLParser loadWSDLParser() {
-        return new DataObjectWSDLParserImpl()
+        return new EnumWSDLParserImpl()
     }
 
     protected String loadWSDLFromDOFile(File doFile) {

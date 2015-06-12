@@ -24,7 +24,7 @@ import com.toastcoders.vmware.yavijava.writer.WriteJavaClass
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-class EnumGeneratorImpl implements Generator {
+class EnumGeneratorImpl extends EnumGeneratorAbs {
 
     String source
     String dest
@@ -32,56 +32,6 @@ class EnumGeneratorImpl implements Generator {
     EnumGeneratorImpl(String source, String dest) {
         this.source = source
         this.dest = dest
-    }
-
-    @Override
-    void generate() {
-        generate(false)
-    }
-
-    @Override
-    void generate(boolean all) {
-        File htmlFile = loadFile(this.source)
-        String base = htmlFile.getParent()
-        HTMLClient client = loadHTMLClient(htmlFile)
-        Map myDataObjects
-        if (all) {
-            myDataObjects = client.getAllObjects()
-        }
-        else {
-            myDataObjects = client.getNewObjects()
-        }
-        //Iterate through the map to open each new DO html file
-        myDataObjects.each { name, doHTMLFile ->
-            File doFile = loadFile(base + htmlFile.separator + doHTMLFile)
-            assert doFile.canRead()
-            WSDLParser parser = loadWSDLParser()
-            String wsdl = loadWSDLFromDOFile(doFile)
-            parser.parse(wsdl)
-            DataObject dataObject = parser.dataObject
-            String javaClass
-            javaClass = EnumJavaTemplate.getPackageName()
-            javaClass += EnumJavaTemplate.getLicense()
-            javaClass += EnumJavaTemplate.getClassDef(dataObject.name)
-            String propEnding = ","
-            int numProps = dataObject.objProperties.size()
-            if (numProps == 1) {
-                propEnding = ";"
-            }
-            dataObject.objProperties.each {
-                javaClass += EnumJavaTemplate.getEnumProp(it.toString(), propEnding)
-                numProps -= 1
-                if (numProps == 1) {
-                    propEnding = ";"
-                }
-            }
-            javaClass += EnumJavaTemplate.getPrivVal()
-            javaClass += EnumJavaTemplate.constructorGenerator(dataObject.name)
-            javaClass += EnumJavaTemplate.toStringGenerator()
-            javaClass += EnumJavaTemplate.closeClass()
-            String fileName = dest + dataObject.name + ".java"
-            WriteJavaClass.writeFile(fileName, javaClass)
-        }
     }
 
     protected File loadFile(String source) {
