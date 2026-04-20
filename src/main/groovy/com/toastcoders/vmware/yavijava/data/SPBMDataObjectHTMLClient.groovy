@@ -1,10 +1,10 @@
 package com.toastcoders.vmware.yavijava.data
 
 import com.toastcoders.vmware.yavijava.contracts.YavijavaHTMLClientAbs
-import org.apache.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import sun.reflect.generics.reflectiveObjects.NotImplementedException
 
 /**
  *  Copyright 2015 Michael Rice <michael@michaelrice.org>
@@ -23,7 +23,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException
  */
 class SPBMDataObjectHTMLClient extends YavijavaHTMLClientAbs {
 
-    private Logger log = Logger.getLogger(SPBMDataObjectHTMLClient)
+    private Logger log = LoggerFactory.getLogger(SPBMDataObjectHTMLClient)
     public Document document
     /**
      * Basic constructor
@@ -80,6 +80,6 @@ class SPBMDataObjectHTMLClient extends YavijavaHTMLClientAbs {
     @Override
     Map getNewObjects() {
         // In the 6.0 docs this doesnt seem to be a thing yet..
-        throw new NotImplementedException()
+        throw new UnsupportedOperationException()
     }
 }

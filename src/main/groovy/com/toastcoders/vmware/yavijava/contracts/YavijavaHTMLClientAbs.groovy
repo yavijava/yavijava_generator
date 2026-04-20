@@ -1,7 +1,8 @@
 package com.toastcoders.vmware.yavijava.contracts
 
 import com.toastcoders.vmware.yavijava.data.YavijavaDataObjectHTMLClient
-import org.apache.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -24,7 +25,7 @@ import org.jsoup.nodes.Element
  */
 abstract class YavijavaHTMLClientAbs implements HTMLClient {
 
-    private Logger log = Logger.getLogger(YavijavaDataObjectHTMLClient)
+    private Logger log = LoggerFactory.getLogger(YavijavaDataObjectHTMLClient)
 
     /**
      * Method to load the Document

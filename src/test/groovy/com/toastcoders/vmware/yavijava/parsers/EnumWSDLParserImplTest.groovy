@@ -1,4 +1,5 @@
 package com.toastcoders.vmware.yavijava.parsers
+import groovy.test.GroovyTestCase
 
 import com.toastcoders.vmware.yavijava.contracts.WSDLParser
 import com.toastcoders.vmware.yavijava.data.YavijavaEnumObjectHTMLClient

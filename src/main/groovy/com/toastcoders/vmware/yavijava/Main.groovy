@@ -1,5 +1,6 @@
 package com.toastcoders.vmware.yavijava
 
+import groovy.cli.picocli.CliBuilder
 import com.toastcoders.vmware.yavijava.contracts.Generator
 import com.toastcoders.vmware.yavijava.generator.DataObjectGeneratorImpl
 import com.toastcoders.vmware.yavijava.generator.EnumGeneratorImpl
