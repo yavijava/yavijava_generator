@@ -1,46 +1,50 @@
+plugins {
+    id 'groovy'
+    id 'application'
+}
+
 group 'com.toastcoders.vmware'
 version '1.1'
 
-apply plugin: 'groovy'
-apply plugin:'application'
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
-sourceCompatibility = 1.6
-mainClassName = 'com.toastcoders.vmware.yavijava.Main'
+application {
+    mainClass = 'com.toastcoders.vmware.yavijava.Main'
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.3.11'
-    compile 'org.jsoup:jsoup:1.8.2'
-    compile 'log4j:log4j:1.2.17'
-    compile 'commons-cli:commons-cli:1.2'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.apache.groovy:groovy-all:4.0.24'
+    implementation 'org.jsoup:jsoup:1.18.3'
+    implementation 'org.slf4j:slf4j-api:2.0.17'
+    implementation 'info.picocli:picocli:4.7.6'
+    testImplementation 'junit:junit:4.13.2'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.13.0'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.18'
 }
 
-sourceSets {
-
-    main {
-        java {
-        }
-        groovy {
-        }
-    }
-    test {
-        java {
-        }
-        groovy {
-        }
-    }
+tasks.withType(GroovyCompile).configureEach {
+    groovyClasspath = configurations.compileClasspath
 }
 
-task fatJar(type: Jar) {
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('fatJar', Jar) {
+    archiveClassifier = 'all'
     manifest {
-        attributes 'Implementation-Title': 'yavijava code generator',
-                'Implementation-Version': version,
-                'Main-Class': 'com.toastcoders.vmware.yavijava.Main'
+        attributes(
+            'Implementation-Title': 'yavijava code generator',
+            'Implementation-Version': version,
+            'Main-Class': 'com.toastcoders.vmware.yavijava.Main'
+        )
     }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

@@ -1,7 +1,7 @@
 package com.toastcoders.vmware.yavijava.data
+import groovy.test.GroovyTestCase
 
 import com.toastcoders.vmware.yavijava.contracts.HTMLClient
-import sun.reflect.generics.reflectiveObjects.NotImplementedException
 
 /**
  *  Copyright 2015 Michael Rice <michael@michaelrice.org>
@@ -35,7 +35,7 @@ class SPBMDataObjectHTMLClientTest extends GroovyTestCase {
     }
 
     void testGetNewObjects() {
-        shouldFail(NotImplementedException) {
+        shouldFail(UnsupportedOperationException) {
             client.getNewObjects()
         }
     }

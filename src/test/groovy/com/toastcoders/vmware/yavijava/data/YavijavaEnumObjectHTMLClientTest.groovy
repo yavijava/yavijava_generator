@@ -1,4 +1,5 @@
 package com.toastcoders.vmware.yavijava.data
+import groovy.test.GroovyTestCase
 
 import com.toastcoders.vmware.yavijava.contracts.HTMLClient
 
