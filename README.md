@@ -28,9 +28,12 @@ To run the tests execute:
     ./gradlew test
 
 ## Current Status
-The application is currently Beta use with caution. It has been tested with vSphere 6.0
+Beta. Tested with vSphere 6.0 through vSphere 9. The HTML-scraping modes (`dataobj`, `fault`, `enum`) require VMware's per-type HTML documentation pages; vSphere 9 no longer ships that format. Use the WSDL-first modes (`wsdl_do`, `wsdl_enum`) for vSphere 9 and later.
 
 ## Usage
+
+### HTML-scraping modes (vSphere ≤ 8)
+
     ./gradelw fatJar
     java -jar build/libs/yavijava_generator-1.0.jar --dest /Users/errr/temp/ --source /Users/errr/programs/java/yavijava.github.io/docs/new-do-types-landing.html --type dataobj --all
 
@@ -40,6 +43,90 @@ This would build a jar containing all deps needed to run the app.
     --source is the path to the dataobjects file
     --type is the type of file to generate. Valid values are one of dataobj, fault, enum
     --all sets a flag to generate all data objects found on the source html page. That means new and existing with new properties
+
+### WSDL-first modes (vSphere 9+)
+
+Two new `--type` values read directly from `vim.wsdl` instead of HTML:
+
+- `wsdl_do` — generates data objects and ArrayOf wrappers from the WSDL
+- `wsdl_enum` — generates enums from the WSDL
+
+Build the fat jar first:
+
+    ./gradlew fatJar
+
+Then run against a local copy of `vim.wsdl`:
+
+    java -jar build/libs/yavijava_generator-1.0.jar --source /path/to/esx/vim.wsdl --dest /tmp/gen/ --type wsdl_do --all
+    java -jar build/libs/yavijava_generator-1.0.jar --source /path/to/esx/vim.wsdl --dest /tmp/gen/ --type wsdl_enum --all
+
+Or via Gradle directly:
+
+    ./gradlew run --args="--source /path/to/esx/vim.wsdl --dest /tmp/gen/ --type wsdl_do --all"
+
+The `--source` argument must point at `vim.wsdl`. All XSD files referenced by `vim.wsdl` (transitively) must live in the same directory as `vim.wsdl`.
+
+## Obtaining the WSDL files
+
+The WSDL and its referenced XSDs are available from any ESXi host's `/sdk` endpoint. You need these files:
+
+    vim.wsdl                  vim-types.xsd
+    vimService.wsdl           reflect-types.xsd
+    core-types.xsd            reflect-messagetypes.xsd
+    query-types.xsd           query-messagetypes.xsd
+    vim-messagetypes.xsd
+
+Fetch them from a live ESXi host (self-signed cert — use `--insecure`):
+
+    curl --insecure -o vim.wsdl https://<esxi-host>/sdk/vim.wsdl
+    curl --insecure -o vim-types.xsd https://<esxi-host>/sdk/vim-types.xsd
+    # repeat for each file above
+
+They can also be found:
+- In the VMware vSphere Management SDK download (from developer.vmware.com)
+- On an ESXi host's filesystem at `/usr/lib/vmware/hostd/docRoot/sdk/`
+
+## Marker mechanism — safe regeneration
+
+Every generated file contains the comment:
+
+    // auto generated using yavijava_generator
+
+When the generator writes a file, `WriteJavaClass` reads any existing file at the destination and checks for this marker:
+
+- **Marker present** — overwrites the file. Safe to regenerate as the WSDL evolves.
+- **Marker absent** — skips the file with a WARN log. Protects hand-written files like `DynamicData.java` and `ManagedObjectReference.java`.
+
+This means the generator can run directly against the yavijava source tree without a skip-list — hand-written files are protected automatically by their lack of the marker.
+
+## Regeneration workflow for new vSphere releases
+
+    # 1. Fetch updated WSDL+XSDs from a target ESXi host
+    curl --insecure -o esx/vim.wsdl https://<esxi>/sdk/vim.wsdl
+    # (repeat for each XSD — see the file list above)
+
+    # 2. Generate to a scratch directory
+    rm -rf /tmp/yavijava-gen && mkdir /tmp/yavijava-gen
+    ./gradlew run --args="--source esx/vim.wsdl --dest /tmp/yavijava-gen/ --type wsdl_do --all"
+    ./gradlew run --args="--source esx/vim.wsdl --dest /tmp/yavijava-gen/ --type wsdl_enum --all"
+
+    # 3. Diff against current yavijava sources to preview changes
+    diff -rq /tmp/yavijava-gen/ /path/to/yavijava/src/main/java/com/vmware/vim25/
+
+    # 4. Copy generated files into yavijava
+    cp /tmp/yavijava-gen/*.java /path/to/yavijava/src/main/java/com/vmware/vim25/
+
+    # 5. Review the orphan list printed by the generator (deprecated types)
+    #    and manually delete any types that are no longer in the WSDL.
+
+    # 6. Build yavijava and run its tests
+    cd /path/to/yavijava && ./gradlew build
+
+Note: existing yavijava files predating the marker (around 3,200 of the older Steve-Jin-style files) will be skipped on first regeneration. Either copy them over with `cp` (which overwrites unconditionally) or add the marker line to existing files if you want them auto-regenerable going forward.
+
+## Architecture note
+
+The WSDL-first path (`wsdl_do`, `wsdl_enum`) reads `vim.wsdl` directly, recursively resolves `<include>` and `<import>` schema references, and emits one Java class per named complexType or simpleType. This replaces the older HTML-scraping flow which only worked when VMware published per-type HTML documentation pages with embedded WSDL textareas — a format vSphere 9 no longer ships.
 
 ## License
 This application is released under the terms of the Apache 2.0 license. 
