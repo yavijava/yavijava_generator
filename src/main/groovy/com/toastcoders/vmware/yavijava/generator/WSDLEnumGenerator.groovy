@@ -28,7 +28,20 @@ class WSDLEnumGenerator implements Generator {
         File wsdlFile = new File(source)
 
         def schemas = new FullWSDLSchemaReader().loadSchema(wsdlFile)
-        new FullWSDLEnumParser().parse(schemas).each { writeEnum(it, packageName) }
+        Set<String> generated = [] as Set
+        new FullWSDLEnumParser().parse(schemas).each {
+            writeEnum(it, packageName)
+            generated << "${it.name}.java".toString()
+        }
+        reportOrphans(generated)
+    }
+
+    private void reportOrphans(Set<String> generated) {
+        def orphans = new OrphanDetector().findOrphans(new File(dest), generated)
+        if (!orphans.isEmpty()) {
+            println "Orphan generated files (in dest but not produced this run):"
+            orphans.each { println "  ${it.name}" }
+        }
     }
 
     private void writeEnum(DataObject obj, String packageName) {

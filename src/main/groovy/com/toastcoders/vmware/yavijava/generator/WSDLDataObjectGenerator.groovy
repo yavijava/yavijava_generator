@@ -40,12 +40,25 @@ class WSDLDataObjectGenerator implements Generator {
         File wsdlFile = new File(source)
 
         def schemas = new FullWSDLSchemaReader().loadSchema(wsdlFile)
+        Set<String> generated = [] as Set
 
         new FullWSDLDataObjectParser().parse(schemas).each {
             writeDataObject(it, packageName)
+            generated << "${it.name}.java".toString()
         }
         new FullWSDLArrayOfParser().parse(schemas).each {
             writeArrayOf(it, packageName)
+            generated << "${it.name}.java".toString()
+        }
+
+        reportOrphans(generated)
+    }
+
+    private void reportOrphans(Set<String> generated) {
+        def orphans = new OrphanDetector().findOrphans(new File(dest), generated)
+        if (!orphans.isEmpty()) {
+            println "Orphan generated files (in dest but not produced this run):"
+            orphans.each { println "  ${it.name}" }
         }
     }
 
