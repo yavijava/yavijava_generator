@@ -66,7 +66,7 @@ class WSDLDataObjectGenerator implements Generator {
         StringBuilder sb = new StringBuilder()
         sb << DynamicDataTemplate.getPackageName(packageName)
         sb << DynamicDataTemplate.getImports()
-        if (obj.objProperties.find { it.propType == "Calendar" }) {
+        if (obj.objProperties.find { it.propType == "Calendar" || it.propType == "Calendar[]" }) {
             sb << "import java.util.Calendar;\n"
         }
         sb << DynamicDataTemplate.getLicense()

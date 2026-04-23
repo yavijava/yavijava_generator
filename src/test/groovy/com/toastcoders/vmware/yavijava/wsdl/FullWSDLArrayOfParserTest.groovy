@@ -63,4 +63,11 @@ public class FullWSDLArrayOfParserTest {
         // implementation contract checked by the prior test.)
         assert arrayOfs.every { it.extendsBase == "" }
     }
+
+    @Test
+    void testNonArrayOfBareSequenceTypeIsSkipped() {
+        // SomeRequestType has a bare sequence (no complexContent/extension)
+        // but does not start with "ArrayOf" — must not be classified as an ArrayOf wrapper.
+        assert arrayOfs.find { it.name == "SomeRequestType" } == null
+    }
 }

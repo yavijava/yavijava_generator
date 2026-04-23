@@ -12,6 +12,7 @@ class FullWSDLArrayOfParser {
             schema.complexType.each { ct ->
                 String name = ct.'@name'.text()
                 if (!name) return
+                if (!name.startsWith('ArrayOf')) return
 
                 // ArrayOf types: bare <sequence>, no <complexContent><extension>
                 if (ct.complexContent.extension.size()) return

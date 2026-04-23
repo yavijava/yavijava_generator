@@ -43,6 +43,13 @@
                <element name="BatchResult" type="vim25:BatchResult" minOccurs="0" maxOccurs="unbounded" />
             </sequence>
          </complexType>
+
+         <complexType name="SomeRequestType">
+            <sequence>
+               <element name="_this" type="xsd:string" />
+               <element name="extra" type="xsd:int" />
+            </sequence>
+         </complexType>
       </schema>
    </types>
 </definitions>
