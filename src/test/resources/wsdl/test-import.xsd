@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema
+   targetNamespace="urn:reflect"
+   xmlns="http://www.w3.org/2001/XMLSchema"
+   xmlns:reflect="urn:reflect"
+   elementFormDefault="qualified"
+>
+   <complexType name="ReflectInfo">
+      <complexContent>
+         <extension base="reflect:DynamicData">
+            <sequence>
+               <element name="reflectField" type="xsd:string" />
+            </sequence>
+         </extension>
+      </complexContent>
+   </complexType>
+</schema>

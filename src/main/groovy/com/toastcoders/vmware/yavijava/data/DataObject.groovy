@@ -20,6 +20,6 @@ package com.toastcoders.vmware.yavijava.data
 class DataObject {
 
     public String name
-    public String extendsBase = "DynamicData"
+    public String extendsBase = ""
     public List objProperties = []
 }

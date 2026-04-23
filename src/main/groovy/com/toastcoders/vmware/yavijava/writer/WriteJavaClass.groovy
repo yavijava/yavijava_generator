@@ -1,5 +1,8 @@
 package com.toastcoders.vmware.yavijava.writer
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 /**
  * Created by Michael Rice on 5/20/15.
  *
@@ -19,13 +22,23 @@ package com.toastcoders.vmware.yavijava.writer
  */
 class WriteJavaClass {
 
-    public static void writeFile(String name, String contents) {
-        File fileName = new File(name)
-        if (fileName.createNewFile()) {
-            assert fileName.canWrite()
-            fileName.withWriter("utf-8") { writer ->
-                writer.write(contents)
+    static final String GENERATOR_MARKER = "auto generated using yavijava_generator"
+    private static final Logger log = LoggerFactory.getLogger(WriteJavaClass)
+
+    static boolean writeFile(String name, String contents) {
+        File file = new File(name)
+
+        if (file.exists()) {
+            String existing = file.text
+            if (!existing.contains(GENERATOR_MARKER)) {
+                log.warn("Skipping ${file.name}: file exists and lacks generator marker (likely hand-written)")
+                return false
             }
         }
+
+        file.withWriter("utf-8") { writer ->
+            writer.write(contents)
+        }
+        return true
     }
 }

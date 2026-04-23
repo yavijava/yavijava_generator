@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions targetNamespace="urn:vim25"
+   xmlns="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:vim25="urn:vim25"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+>
+   <types>
+      <schema
+         targetNamespace="urn:vim25"
+         xmlns="http://www.w3.org/2001/XMLSchema"
+         xmlns:vim25="urn:vim25"
+         elementFormDefault="qualified"
+      >
+         <include schemaLocation="test-types.xsd" />
+         <import namespace="urn:reflect" schemaLocation="test-import.xsd" />
+
+         <simpleType name="TaskInfoState">
+            <restriction base="xsd:string">
+               <enumeration value="queued" />
+               <enumeration value="running" />
+               <enumeration value="success" />
+               <enumeration value="error" />
+            </restriction>
+         </simpleType>
+
+         <complexType name="BatchResult">
+            <complexContent>
+               <extension base="vim25:DynamicData">
+                  <sequence>
+                     <element name="result" type="xsd:string" />
+                     <element name="error" type="xsd:string" minOccurs="0" />
+                     <element name="checkLong" type="xsd:long" minOccurs="0" />
+                     <element name="optionalInt" type="xsd:int" minOccurs="0" />
+                     <element name="tags" type="xsd:string" maxOccurs="unbounded" minOccurs="0" />
+                     <element name="counts" type="xsd:int" maxOccurs="unbounded" minOccurs="0" />
+                  </sequence>
+               </extension>
+            </complexContent>
+         </complexType>
+
+         <complexType name="ArrayOfBatchResult">
+            <sequence>
+               <element name="BatchResult" type="vim25:BatchResult" minOccurs="0" maxOccurs="unbounded" />
+            </sequence>
+         </complexType>
+
+         <complexType name="SomeRequestType">
+            <sequence>
+               <element name="_this" type="xsd:string" />
+               <element name="extra" type="xsd:int" />
+            </sequence>
+         </complexType>
+      </schema>
+   </types>
+</definitions>
