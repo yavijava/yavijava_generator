@@ -25,10 +25,19 @@ class WSDLDataObjectGenerator implements Generator {
     @Override
     void generate(boolean all) { generate(all, "com.vmware.vim25", [vim25: 'urn:vim25']) }
 
+    /**
+     * Generates Java source files for every data object and ArrayOf wrapper
+     * type defined in the WSDL.
+     *
+     * @param all       Inherited from {@link Generator}; ignored — WSDL-first mode
+     *                  always emits all types (no "new vs changed" concept).
+     * @param packageName Java package for the generated classes.
+     * @param nameSpace Inherited from {@link Generator}; ignored — XML namespaces
+     *                  are resolved from the schema documents directly.
+     */
     @Override
     void generate(boolean all, String packageName, Map nameSpace) {
         File wsdlFile = new File(source)
-        assert wsdlFile.canRead(): "Cannot read WSDL: ${wsdlFile.absolutePath}"
 
         def schemas = new FullWSDLSchemaReader().loadSchema(wsdlFile)
 
