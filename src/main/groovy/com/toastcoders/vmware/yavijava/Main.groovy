@@ -6,6 +6,8 @@ import com.toastcoders.vmware.yavijava.generator.DataObjectGeneratorImpl
 import com.toastcoders.vmware.yavijava.generator.EnumGeneratorImpl
 import com.toastcoders.vmware.yavijava.generator.SPBMDataObjectGeneratorImpl
 import com.toastcoders.vmware.yavijava.generator.SPBMEnumGeneratorImpl
+import com.toastcoders.vmware.yavijava.generator.WSDLDataObjectGenerator
+import com.toastcoders.vmware.yavijava.generator.WSDLEnumGenerator
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -33,7 +35,7 @@ class Main {
         cli._(longOpt: 'source', 'Source to read from', required: true, args: 1)
         cli._(longOpt: 'dest', 'Destination path for where to write new files', required: true, args: 1)
         cli._(longOpt: 'type',
-            'Type of objects to create. Valid values are one of either: dataobj, fault, enum, spbm_do, spbm_fault, spbm_enum',
+            'Type of objects to create. Valid values are one of either: dataobj, fault, enum, spbm_do, spbm_fault, spbm_enum, wsdl_do, wsdl_enum',
             required: true, args: 1
         )
         cli.a(longOpt: 'all', 'Generate new and changed. Default is new only')
@@ -53,7 +55,7 @@ class Main {
             all = true
         }
 
-        List valid = ["dataobj", "fault", "enum", "spbm_do", "spbm_fault", "spbm_enum"]
+        List valid = ["dataobj", "fault", "enum", "spbm_do", "spbm_fault", "spbm_enum", "wsdl_do", "wsdl_enum"]
         if (!(opt.type in valid)) {
             println "Invalid type detected. ${opt.type} not supported."
             cli.usage()
@@ -83,6 +85,14 @@ class Main {
             case "spbm_enum":
                 Generator spbmEnumGenerator = new SPBMEnumGeneratorImpl(source, dest)
                 spbmEnumGenerator.generate(all, "com.vmware.spbm", ['pbm': 'xmlns:pbm="urn:pbm"'])
+                break
+            case "wsdl_do":
+                Generator wsdlDoGenerator = new WSDLDataObjectGenerator(source, dest)
+                wsdlDoGenerator.generate(all, "com.vmware.vim25", [vim25: 'urn:vim25'])
+                break
+            case "wsdl_enum":
+                Generator wsdlEnumGenerator = new WSDLEnumGenerator(source, dest)
+                wsdlEnumGenerator.generate(all, "com.vmware.vim25", [vim25: 'urn:vim25'])
                 break
             default:
                 // enums for vim25 yavijava
