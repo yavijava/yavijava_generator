@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema
+   targetNamespace="urn:vim25"
+   xmlns="http://www.w3.org/2001/XMLSchema"
+   xmlns:vim25="urn:vim25"
+   elementFormDefault="qualified"
+>
+   <complexType name="TaskInfo">
+      <complexContent>
+         <extension base="vim25:DynamicData">
+            <sequence>
+               <element name="key" type="xsd:string" />
+               <element name="state" type="vim25:TaskInfoState" />
+               <element name="progress" type="xsd:int" minOccurs="0" />
+               <element name="results" type="xsd:anyType" maxOccurs="unbounded" minOccurs="0" />
+            </sequence>
+         </extension>
+      </complexContent>
+   </complexType>
+
+   <complexType name="ArrayOfTaskInfo">
+      <sequence>
+         <element name="TaskInfo" type="vim25:TaskInfo" minOccurs="0" maxOccurs="unbounded" />
+      </sequence>
+   </complexType>
+
+   <simpleType name="VirtualMachinePowerState">
+      <restriction base="xsd:string">
+         <enumeration value="poweredOff" />
+         <enumeration value="poweredOn" />
+         <enumeration value="suspended" />
+      </restriction>
+   </simpleType>
+</schema>
