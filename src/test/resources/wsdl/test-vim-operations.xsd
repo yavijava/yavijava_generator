@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="urn:vim25"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:vim25="urn:vim25"
+        elementFormDefault="qualified">
+
+    <complexType name="ManagedObjectReference">
+        <simpleContent>
+            <extension base="xsd:string">
+                <attribute name="type" type="xsd:string" />
+            </extension>
+        </simpleContent>
+    </complexType>
+
+    <complexType name="DynamicData">
+        <sequence />
+    </complexType>
+
+    <complexType name="MethodFault">
+        <complexContent>
+            <extension base="vim25:DynamicData">
+                <sequence />
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="RuntimeFault">
+        <complexContent>
+            <extension base="vim25:MethodFault">
+                <sequence />
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="TaskInProgress">
+        <complexContent>
+            <extension base="vim25:MethodFault">
+                <sequence />
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="InvalidState">
+        <complexContent>
+            <extension base="vim25:MethodFault">
+                <sequence />
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="ReloadRequestType">
+        <sequence>
+            <element name="_this" type="vim25:ManagedObjectReference" />
+        </sequence>
+    </complexType>
+    <element name="Reload" type="vim25:ReloadRequestType" />
+    <element name="ReloadResponse">
+        <complexType><sequence /></complexType>
+    </element>
+
+    <complexType name="PowerOnVMRequestType">
+        <sequence>
+            <element name="_this" type="vim25:ManagedObjectReference" />
+            <element name="host" type="vim25:ManagedObjectReference" minOccurs="0" />
+        </sequence>
+    </complexType>
+    <element name="PowerOnVM_Task" type="vim25:PowerOnVMRequestType" />
+    <element name="PowerOnVM_TaskResponse">
+        <complexType>
+            <sequence>
+                <element name="returnval" type="vim25:ManagedObjectReference" />
+            </sequence>
+        </complexType>
+    </element>
+
+    <complexType name="QueryNamesRequestType">
+        <sequence>
+            <element name="_this" type="vim25:ManagedObjectReference" />
+        </sequence>
+    </complexType>
+    <element name="QueryNames" type="vim25:QueryNamesRequestType" />
+    <element name="QueryNamesResponse">
+        <complexType>
+            <sequence>
+                <element name="returnval" type="xsd:string" maxOccurs="unbounded" />
+            </sequence>
+        </complexType>
+    </element>
+</schema>
