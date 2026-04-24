@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions targetNamespace="urn:vim25"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:vim25="urn:vim25"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <types>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema"
+                xmlns:vim25="urn:vim25"
+                targetNamespace="urn:vim25"
+                elementFormDefault="qualified">
+            <include schemaLocation="test-vim-operations.xsd" />
+        </schema>
+    </types>
+
+    <message name="ReloadRequestMsg">
+        <part name="parameters" element="vim25:Reload" />
+    </message>
+    <message name="ReloadResponseMsg">
+        <part name="parameters" element="vim25:ReloadResponse" />
+    </message>
+    <message name="RuntimeFaultFaultMsg">
+        <part name="fault" element="vim25:RuntimeFault" />
+    </message>
+    <message name="TaskInProgressFaultMsg">
+        <part name="fault" element="vim25:TaskInProgress" />
+    </message>
+    <message name="InvalidStateFaultMsg">
+        <part name="fault" element="vim25:InvalidState" />
+    </message>
+
+    <message name="PowerOnVM_TaskRequestMsg">
+        <part name="parameters" element="vim25:PowerOnVM_Task" />
+    </message>
+    <message name="PowerOnVM_TaskResponseMsg">
+        <part name="parameters" element="vim25:PowerOnVM_TaskResponse" />
+    </message>
+
+    <message name="QueryNamesRequestMsg">
+        <part name="parameters" element="vim25:QueryNames" />
+    </message>
+    <message name="QueryNamesResponseMsg">
+        <part name="parameters" element="vim25:QueryNamesResponse" />
+    </message>
+
+    <portType name="VimPortType">
+        <operation name="Reload">
+            <input  message="vim25:ReloadRequestMsg"  />
+            <output message="vim25:ReloadResponseMsg" />
+            <fault name="RuntimeFault" message="vim25:RuntimeFaultFaultMsg" />
+        </operation>
+        <operation name="PowerOnVM_Task">
+            <input  message="vim25:PowerOnVM_TaskRequestMsg"  />
+            <output message="vim25:PowerOnVM_TaskResponseMsg" />
+            <fault name="TaskInProgress" message="vim25:TaskInProgressFaultMsg" />
+            <fault name="InvalidState"   message="vim25:InvalidStateFaultMsg"   />
+            <fault name="RuntimeFault"   message="vim25:RuntimeFaultFaultMsg"   />
+        </operation>
+        <operation name="QueryNames">
+            <input  message="vim25:QueryNamesRequestMsg"  />
+            <output message="vim25:QueryNamesResponseMsg" />
+            <fault name="RuntimeFault" message="vim25:RuntimeFaultFaultMsg" />
+        </operation>
+    </portType>
+</definitions>
