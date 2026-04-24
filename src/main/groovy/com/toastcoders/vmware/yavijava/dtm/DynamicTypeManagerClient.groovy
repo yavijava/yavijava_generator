@@ -55,33 +55,49 @@ class DynamicTypeManagerClient {
         }
     }
 
+    private String sessionManagerMor = "SessionManager"
+
     private void login() {
+        sessionManagerMor = retrieveSessionManagerMor()
         String body = """\
-<Login xmlns="urn:vim25"><_this type="SessionManager">SessionManager</_this><userName>${user}</userName><password>${pass}</password></Login>"""
+<Login xmlns="urn:vim25"><_this type="SessionManager">${sessionManagerMor}</_this><userName>${user}</userName><password>${pass}</password></Login>"""
         def conn = post(envelope(body))
-        sessionCookie = conn.getHeaderField("Set-Cookie")
-        if (sessionCookie == null) throw new RuntimeException("DTM login failed; no session cookie returned")
-        sessionCookie = sessionCookie.split(";")[0]
-        def env = new XmlSlurper().parseText(conn.inputStream.text)
+        String setCookie = conn.getHeaderField("Set-Cookie")
+        if (setCookie != null) sessionCookie = setCookie.split(";")[0]
+        String respBody = conn.inputStream.text
+        def env = new XmlSlurper().parseText(respBody)
         if (env.depthFirst().any { it.name() == "Fault" }) {
-            throw new RuntimeException("DTM login fault: ${conn.inputStream.text}")
+            throw new RuntimeException("DTM login fault: ${respBody}")
         }
+        if (sessionCookie == null) throw new RuntimeException("DTM login failed; no session cookie returned")
+    }
+
+    private String retrieveSessionManagerMor() {
+        String body = '<RetrieveServiceContent xmlns="urn:vim25"><_this type="ServiceInstance">ServiceInstance</_this></RetrieveServiceContent>'
+        def conn = post(envelope(body))
+        def env = new XmlSlurper().parseText(conn.inputStream.text)
+        def sm = env.depthFirst().find { it.name() == "sessionManager" }
+        if (sm == null || sm.text().isEmpty()) {
+            log.warn("DTM: no sessionManager in RetrieveServiceContent; falling back to 'SessionManager'")
+            return "SessionManager"
+        }
+        return sm.text()
     }
 
     private void logout() {
-        String body = '<Logout xmlns="urn:vim25"><_this type="SessionManager">SessionManager</_this></Logout>'
+        String body = "<Logout xmlns=\"urn:vim25\"><_this type=\"SessionManager\">${sessionManagerMor}</_this></Logout>"
         post(envelope(body))
     }
 
     private String discoverDtmMor() {
-        for (String candidate : ["DynamicTypeManager", "InternalDynamicTypeManager"]) {
+        for (String candidate : ["ha-dynamic-type-manager", "DynamicTypeManager", "InternalDynamicTypeManager"]) {
             try {
                 enumerateTypes(candidate)
                 log.info("DTM: using MOR value=${candidate}")
                 return candidate
             } catch (Exception ignored) { /* try next */ }
         }
-        throw new RuntimeException("DTM not exposed on this endpoint (tried both well-known MOR values)")
+        throw new RuntimeException("DTM not exposed on this endpoint (tried all well-known MOR values)")
     }
 
     private List<String> enumerateTypes(String dtmValue) {

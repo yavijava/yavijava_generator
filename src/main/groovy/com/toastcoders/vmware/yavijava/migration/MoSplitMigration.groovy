@@ -58,6 +58,10 @@ class MoSplitMigration {
             return false
         }
         ClassOrInterfaceDeclaration cls = cu.getType(0) as ClassOrInterfaceDeclaration
+        if (cls.extendedTypes.isEmpty()) {
+            log.info("migration: skipping non-MO (no extends): ${file.name}")
+            return false
+        }
 
         List<BodyDeclaration<?>> baseMembers = []
         List<BodyDeclaration<?>> subclassMembers = []
@@ -84,6 +88,7 @@ class MoSplitMigration {
     private String renderBase(CompilationUnit origCu, ClassOrInterfaceDeclaration origCls,
                               String typeName, List<BodyDeclaration<?>> members) {
         CompilationUnit baseCu = origCu.clone()
+        ensureImport(baseCu, "com.vmware.vim25.ManagedObjectReference")
         ClassOrInterfaceDeclaration baseCls = baseCu.getType(0) as ClassOrInterfaceDeclaration
         baseCls.setName("${typeName}Base")
         baseCls.members.clear()
@@ -94,6 +99,11 @@ class MoSplitMigration {
             .addStatement("super(serverConnection, mor);")
         members.each { baseCls.addMember(it.clone()) }
         return MARKER + "\n" + baseCu.toString()
+    }
+
+    private void ensureImport(CompilationUnit cu, String fqn) {
+        boolean already = cu.imports.any { it.nameAsString == fqn }
+        if (!already) cu.addImport(fqn)
     }
 
     private String renderSubclass(CompilationUnit origCu, ClassOrInterfaceDeclaration origCls,

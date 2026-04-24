@@ -105,7 +105,8 @@ class FullWSDLOperationParser {
         seq.element.each { el ->
             OpParam p = new OpParam()
             p.name = el.@name.text()
-            p.type = stripPrefix(el.@type.text())
+            String rawType = el.@type.text()
+            p.type = rawType.startsWith("xsd:") ? rawType : stripPrefix(rawType)
             p.isArray = el.@maxOccurs.text() == "unbounded"
             p.isOptional = el.@minOccurs.text() == "0"
             params << p
