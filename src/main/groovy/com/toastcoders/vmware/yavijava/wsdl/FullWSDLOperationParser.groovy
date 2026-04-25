@@ -2,12 +2,9 @@ package com.toastcoders.vmware.yavijava.wsdl
 
 import com.toastcoders.vmware.yavijava.data.Operation
 import com.toastcoders.vmware.yavijava.data.OpParam
-import com.toastcoders.vmware.yavijava.dtm.TypeMapper
 import groovy.xml.XmlSlurper
 
 class FullWSDLOperationParser {
-
-    private final TypeMapper typeMapper = new TypeMapper()
 
     List<Operation> parse(File wsdlFile, List schemas) {
         def wsdl = new XmlSlurper().parse(wsdlFile)
@@ -126,8 +123,25 @@ class FullWSDLOperationParser {
         op.returnType = stripPrefix(returnval.@type.text())
         op.returnIsArray = returnval.@maxOccurs.text() == "unbounded"
         if (returnval.@type.text().startsWith("xsd:")) {
-            op.returnType = typeMapper.toJavaType(returnval.@type.text(), false, false)
+            op.returnType = toJavaType(returnval.@type.text())
         }
+    }
+
+    private static final Map<String, String> XSD_TO_JAVA = [
+        "xsd:string"  : "String",
+        "xsd:int"     : "int",
+        "xsd:long"    : "long",
+        "xsd:boolean" : "boolean",
+        "xsd:short"   : "short",
+        "xsd:byte"    : "byte",
+        "xsd:float"   : "float",
+        "xsd:double"  : "double",
+        "xsd:dateTime": "Calendar",
+        "xsd:anyType" : "Object",
+    ]
+
+    private String toJavaType(String xsdType) {
+        return XSD_TO_JAVA[xsdType] ?: (xsdType.contains(":") ? xsdType.split(":")[1] : xsdType)
     }
 
     private String stripPrefix(String qname) {
