@@ -10,7 +10,10 @@ import com.toastcoders.vmware.yavijava.generator.WSDLDataObjectGenerator
 import com.toastcoders.vmware.yavijava.generator.WSDLEnumGenerator
 import com.toastcoders.vmware.yavijava.generator.WSDLVimStubGenerator
 import com.toastcoders.vmware.yavijava.generator.DTMManagedObjectGenerator
+import com.toastcoders.vmware.yavijava.generator.PyvmomiManagedObjectGenerator
 import com.toastcoders.vmware.yavijava.migration.MoSplitMigration
+import com.toastcoders.vmware.yavijava.migration.PyvmomiAudit
+import com.toastcoders.vmware.yavijava.migration.PyvmomiMigrate
 
 /**
  * Created by Michael Rice on 5/20/15.
@@ -38,7 +41,7 @@ class Main {
         cli._(longOpt: 'source', 'Source to read from (WSDL/HTML — required for non-DTM modes)', required: false, args: 1)
         cli._(longOpt: 'dest', 'Destination path for where to write new files', required: false, args: 1)
         cli._(longOpt: 'type',
-            'Type of objects to create. Valid values are one of either: dataobj, fault, enum, spbm_do, spbm_fault, spbm_enum, wsdl_do, wsdl_enum, wsdl_vimstub, dtm_mo, migrate_mo',
+            'Type of objects to create. Valid values are one of either: dataobj, fault, enum, spbm_do, spbm_fault, spbm_enum, wsdl_do, wsdl_enum, wsdl_vimstub, dtm_mo, migrate_mo, pyvmomi_audit, pyvmomi_migrate, pyvmomi_mo',
             required: true, args: 1
         )
         cli.a(longOpt: 'all', 'Generate new and changed. Default is new only')
@@ -48,6 +51,7 @@ class Main {
         cli._(longOpt: 'esx-strict-cert', 'Verify the ESXi cert (default: false)',                 required: false)
         cli._(longOpt: 'dtm-snapshot',    'JSON snapshot path (read or write per design §4.2)',    required: false, args: 1)
         cli._(longOpt: 'yavijava-src',    'Yavijava source root for migrate_mo',                   required: false, args: 1)
+        cli._(longOpt: 'schema', 'pyVmomi schema JSON path (for pyvmomi_audit/migrate/mo)', required: false, args: 1)
         def opt = cli.parse(args)
 
         if(!opt) {
@@ -64,19 +68,29 @@ class Main {
             all = true
         }
 
-        List valid = ["dataobj", "fault", "enum", "spbm_do", "spbm_fault", "spbm_enum", "wsdl_do", "wsdl_enum", "wsdl_vimstub", "dtm_mo", "migrate_mo"]
+        List valid = ["dataobj", "fault", "enum", "spbm_do", "spbm_fault", "spbm_enum", "wsdl_do", "wsdl_enum", "wsdl_vimstub", "dtm_mo", "migrate_mo", "pyvmomi_audit", "pyvmomi_migrate", "pyvmomi_mo"]
         if (!(opt.type in valid)) {
             println "Invalid type detected. ${opt.type} not supported."
             cli.usage()
             System.exit(1)
         }
-        if (opt.type != "dtm_mo" && opt.type != "migrate_mo" && !opt?.source) {
+        if (opt.type != "dtm_mo" && opt.type != "migrate_mo" && opt.type != "pyvmomi_audit" && opt.type != "pyvmomi_migrate" && opt.type != "pyvmomi_mo" && !opt?.source) {
             println "--source is required for type ${opt.type}"
             cli.usage()
             System.exit(1)
         }
-        if (opt.type != "migrate_mo" && !opt?.dest) {
+        if ((opt.type == "wsdl_vimstub" || opt.type == "dtm_mo" || opt.type == "pyvmomi_mo") && !opt?.dest) {
             println "--dest is required for type ${opt.type}"
+            cli.usage()
+            System.exit(1)
+        }
+        if ((opt.type == "pyvmomi_audit" || opt.type == "pyvmomi_migrate" || opt.type == "pyvmomi_mo") && !opt?.schema) {
+            println "--schema is required for type ${opt.type}"
+            cli.usage()
+            System.exit(1)
+        }
+        if ((opt.type == "pyvmomi_audit" || opt.type == "pyvmomi_migrate" || opt.type == "migrate_mo") && !opt?.'yavijava-src') {
+            println "--yavijava-src is required for type ${opt.type}"
             cli.usage()
             System.exit(1)
         }
@@ -122,6 +136,16 @@ class Main {
                     System.exit(1)
                 }
                 new MoSplitMigration().run(yvSrc)
+                break
+            case "pyvmomi_audit":
+                new PyvmomiAudit().run(opt.schema, opt.'yavijava-src')
+                break
+            case "pyvmomi_migrate":
+                new PyvmomiMigrate().run(opt.schema, opt.'yavijava-src')
+                break
+            case "pyvmomi_mo":
+                Generator pyvmomiGen = new PyvmomiManagedObjectGenerator(opt.schema, dest)
+                pyvmomiGen.generate(all, "com.vmware.vim25.mo", [:])
                 break
             case "dtm_mo":
                 String snap = opt?.'dtm-snapshot' ?: null
