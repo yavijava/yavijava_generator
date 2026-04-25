@@ -41,4 +41,70 @@ class WriteJavaClass {
         }
         return true
     }
+
+    static final String CUSTOM_IMPORTS_BEGIN = "/* ===== BEGIN custom imports (preserved by regenerator) ===== */"
+    static final String CUSTOM_IMPORTS_END   = "/* ===== END custom imports ===== */"
+    static final String CUSTOM_BEGIN         = "/* ===== BEGIN custom (preserved by regenerator) ===== */"
+    static final String CUSTOM_END           = "/* ===== END custom ===== */"
+
+    static boolean writeFileWithFence(String name, String generated) {
+        File file = new File(name)
+        String toWrite = generated
+        if (file.exists()) {
+            String existing = file.text
+            if (!existing.contains(GENERATOR_MARKER)) {
+                log.warn("Skipping ${file.name}: file exists and lacks generator marker (likely hand-written)")
+                return false
+            }
+            // Validate fence integrity in the existing file
+            String importsContent = extractFence(existing, CUSTOM_IMPORTS_BEGIN, CUSTOM_IMPORTS_END, file.name)
+            if (importsContent == null) return false
+            String customContent = extractFence(existing, CUSTOM_BEGIN, CUSTOM_END, file.name)
+            if (customContent == null) return false
+            // Splice extracted content into the generated template's empty fences
+            toWrite = spliceFence(toWrite, CUSTOM_IMPORTS_BEGIN, CUSTOM_IMPORTS_END, importsContent)
+            toWrite = spliceFence(toWrite, CUSTOM_BEGIN, CUSTOM_END, customContent)
+        }
+        file.withWriter("utf-8") { it.write(toWrite) }
+        return true
+    }
+
+    /** Returns the bytes between begin and end markers (exclusive), or null on integrity error. */
+    private static String extractFence(String content, String begin, String end, String fileName) {
+        int beginCount = countOccurrences(content, begin)
+        int endCount   = countOccurrences(content, end)
+        if (beginCount == 0 && endCount == 0) {
+            return ""  // No fence at all is valid (no preservation needed)
+        }
+        if (beginCount != 1 || endCount != 1) {
+            log.error("Refusing to rewrite ${fileName}: fence markers malformed (expected 1 BEGIN+END pair, found ${beginCount} BEGINs and ${endCount} ENDs for ${begin}/${end})")
+            return null
+        }
+        int s = content.indexOf(begin) + begin.length()
+        int e = content.indexOf(end)
+        if (s >= e) {
+            log.error("Refusing to rewrite ${fileName}: fence END appears before BEGIN")
+            return null
+        }
+        return content.substring(s, e)
+    }
+
+    /** Replace the empty fence in generated with extracted content. */
+    private static String spliceFence(String generated, String begin, String end, String content) {
+        if (content == null || content.isEmpty()) return generated
+        int s = generated.indexOf(begin)
+        int e = generated.indexOf(end)
+        if (s < 0 || e < 0) return generated  // generator didn't include this fence
+        return generated.substring(0, s + begin.length()) + content + generated.substring(e)
+    }
+
+    private static int countOccurrences(String haystack, String needle) {
+        int count = 0
+        int idx = 0
+        while ((idx = haystack.indexOf(needle, idx)) != -1) {
+            count++
+            idx += needle.length()
+        }
+        return count
+    }
 }
