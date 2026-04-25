@@ -149,17 +149,42 @@ def method_return_is_mor(result_type) -> bool:
     return is_mor_type(result_type)
 
 
+# pyVmomi exposes primitive types using their Python names. Map them to the
+# Java types yavijava uses on the wire side.
+PRIMITIVE_PYTHON_TO_JAVA = {
+    "str": "String",
+    "bool": "boolean",
+    "int": "int",
+    "long": "long",
+    "short": "short",
+    "byte": "byte",
+    "float": "float",
+    "double": "double",
+    "datetime": "Calendar",
+    "object": "Object",
+    "binary": "byte[]",
+    "type": "String",  # vmodl type name; rendered as a String in yavijava
+    "PropertyPath": "String",
+    "TypeName": "String",
+    "MethodName": "String",
+    "URI": "String",
+    "PEM": "String",
+    "X509CertChain": "String",
+}
+
+
 def resolve_wsdl_type(py_type) -> str:
     """Translate a pyVmomi type class to its WSDL name.
 
     For array types (e.g. vim.VirtualMachine.Connection[]), unwrap to the
-    base item type and return its wsdlName.
+    base item type and return its wsdlName. Python primitive types
+    (str, bool, datetime, etc.) are mapped to their Java equivalents.
     """
     if isinstance(py_type, str):
         # Shouldn't happen for property/param types, but handle defensively
         if "." in py_type:
             return py_type.rsplit(".", 1)[-1]
-        return py_type
+        return PRIMITIVE_PYTHON_TO_JAVA.get(py_type, py_type)
 
     # Array types have a .Item attribute pointing to the element type
     base = py_type
@@ -168,7 +193,8 @@ def resolve_wsdl_type(py_type) -> str:
 
     wsdl = getattr(base, "_wsdlName", None)
     if wsdl:
-        return wsdl
+        return PRIMITIVE_PYTHON_TO_JAVA.get(wsdl, wsdl)
+
     # Fallback: use the unqualified class name, stripping [] suffix
     name = base.__name__
     if name.endswith("[]"):
@@ -176,7 +202,7 @@ def resolve_wsdl_type(py_type) -> str:
     # Strip qualified prefix (e.g. 'vim.VirtualMachine.Connection' -> 'Connection')
     if "." in name:
         name = name.rsplit(".", 1)[-1]
-    return name
+    return PRIMITIVE_PYTHON_TO_JAVA.get(name, name)
 
 
 def resolve_fault_type(fault_ref) -> str:

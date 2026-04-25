@@ -26,7 +26,9 @@ class ManagedObjectSingleClassTemplate {
         sb << MARKER << "\n"
         sb << "package com.vmware.vim25.mo;\n\n"
         sb << "import com.vmware.vim25.*;\n"
-        sb << "import java.rmi.RemoteException;\n\n"
+        sb << "import java.rmi.RemoteException;\n"
+        if (usesCalendar(mo)) sb << "import java.util.Calendar;\n"
+        sb << "\n"
         sb << "/* ===== BEGIN custom imports (preserved by regenerator) ===== */\n"
         sb << "/* ===== END custom imports ===== */\n\n"
         String parent = mo.parent ?: "ManagedObject"
@@ -80,7 +82,7 @@ class ManagedObjectSingleClassTemplate {
         sb << "    public ${returnJava} ${m.name}(${paramsSig}) throws ${throws_} {\n"
         List<String> stubArgs = ["getMOR()"]
         m.params.each { p ->
-            if (p.isManagedObjectReference) {
+            if (p.isManagedObjectReference && !p.isArray) {
                 stubArgs << "${p.name} == null ? null : ${p.name}.getMOR()"
             } else {
                 stubArgs << p.name
@@ -117,5 +119,12 @@ class ManagedObjectSingleClassTemplate {
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) return s
         return s[0].toUpperCase() + s.substring(1)
+    }
+
+    private static boolean usesCalendar(PyvmomiManagedObject mo) {
+        if (mo.properties.any { it.type == "Calendar" }) return true
+        return mo.methods.any { m ->
+            m.returnType == "Calendar" || m.params.any { it.type == "Calendar" }
+        }
     }
 }

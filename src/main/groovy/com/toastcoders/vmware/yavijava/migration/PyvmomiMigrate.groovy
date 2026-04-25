@@ -21,6 +21,13 @@ class PyvmomiMigrate {
     private static final String CUSTOM_BEGIN         = "/* ===== BEGIN custom (preserved by regenerator) ===== */"
     private static final String CUSTOM_END           = "/* ===== END custom ===== */"
 
+    /** Imports the regenerator template emits unconditionally; never relocate these. */
+    private static final Set<String> STANDARD_IMPORTS = [
+        "com.vmware.vim25.*",
+        "java.rmi.RemoteException",
+        "java.util.Calendar",
+    ] as Set
+
     private final MoMemberClassifier classifier = new MoMemberClassifier()
 
     void run(String schemaPath, String yavijavaSrcRoot) {
@@ -56,6 +63,14 @@ class PyvmomiMigrate {
         try { cu = StaticJavaParser.parse(file) }
         catch (Exception e) { log.warn("migrate: cannot parse ${file.name}: ${e.message}"); return }
         ClassOrInterfaceDeclaration cls = cu.getType(0) as ClassOrInterfaceDeclaration
+
+        // Capture non-standard imports before clearing them — they'll be relocated to the
+        // BEGIN custom imports fence so referenced types still resolve after regen.
+        StringBuilder customImports = new StringBuilder()
+        cu.imports.findAll { !STANDARD_IMPORTS.contains(it.nameAsString) }.each {
+            customImports << it.toString()
+        }
+        cu.imports.clear()
 
         // Bucket members
         List<BodyDeclaration<?>> autoGen = []
@@ -105,6 +120,7 @@ class PyvmomiMigrate {
         String tail = withFence.substring(firstNl + 1)
         String withImportsFence = head + "\n" +
             "${CUSTOM_IMPORTS_BEGIN}\n" +
+            customImports.toString() +
             "${CUSTOM_IMPORTS_END}\n\n" +
             tail
 
