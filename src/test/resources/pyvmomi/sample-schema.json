@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "extractedAt": "2026-04-24T15:30:00Z",
+  "pyvmomiVersion": "9.0.0.0-fixture",
+  "vimNamespace": "vim",
+  "managedObjects": [
+    {
+      "name": "HostSystem",
+      "wsdlName": "HostSystem",
+      "qualifiedName": "vim.HostSystem",
+      "parent": "ManagedEntity",
+      "version": "vim.version.version1",
+      "introducedIn": "vim.version.version1",
+      "properties": [],
+      "methods": []
+    },
+    {
+      "name": "ManagedEntity",
+      "wsdlName": "ManagedEntity",
+      "qualifiedName": "vim.ManagedEntity",
+      "parent": "ExtensibleManagedObject",
+      "version": "vim.version.version1",
+      "introducedIn": "vim.version.version1",
+      "properties": [],
+      "methods": []
+    },
+    {
+      "name": "VirtualMachine",
+      "wsdlName": "VirtualMachine",
+      "qualifiedName": "vim.VirtualMachine",
+      "parent": "ManagedEntity",
+      "version": "vim.version.version1",
+      "introducedIn": "vim.version.version1",
+      "properties": [
+        {
+          "name": "name",
+          "type": "String",
+          "isArray": false,
+          "isOptional": false,
+          "isManagedObjectReference": false,
+          "version": "vim.version.version1",
+          "privilegeId": null
+        },
+        {
+          "name": "parent",
+          "type": "ManagedEntity",
+          "isArray": false,
+          "isOptional": true,
+          "isManagedObjectReference": true,
+          "version": "vim.version.version1",
+          "privilegeId": null
+        },
+        {
+          "name": "recentTask",
+          "type": "Task",
+          "isArray": true,
+          "isOptional": true,
+          "isManagedObjectReference": true,
+          "version": "vim.version.version1",
+          "privilegeId": null
+        },
+        {
+          "name": "runtime",
+          "type": "VirtualMachineRuntimeInfo",
+          "isArray": false,
+          "isOptional": false,
+          "isManagedObjectReference": false,
+          "version": "vim.version.version1",
+          "privilegeId": null
+        }
+      ],
+      "methods": [
+        {
+          "name": "powerOnVM_Task",
+          "wsdlName": "PowerOnVM_Task",
+          "version": "vim.version.version1",
+          "params": [
+            {
+              "name": "host",
+              "type": "HostSystem",
+              "isArray": false,
+              "isOptional": true,
+              "isManagedObjectReference": true
+            }
+          ],
+          "returnType": "Task",
+          "returnIsArray": false,
+          "returnIsManagedObjectReference": true,
+          "faults": ["FileFault", "InvalidState", "TaskInProgress"],
+          "privilegeId": "VirtualMachine.Interact.PowerOn"
+        },
+        {
+          "name": "reload",
+          "wsdlName": "Reload",
+          "version": "vim.version.version1",
+          "params": [],
+          "returnType": "void",
+          "returnIsArray": false,
+          "returnIsManagedObjectReference": false,
+          "faults": [],
+          "privilegeId": null
+        }
+      ]
+    }
+  ]
+}

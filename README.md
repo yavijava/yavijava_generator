@@ -30,7 +30,7 @@ To run the tests execute:
 ## Current Status
 Beta. Tested with vSphere 6.0 through vSphere 9. The HTML-scraping modes (`dataobj`, `fault`, `enum`) require VMware's per-type HTML documentation pages; vSphere 9 no longer ships that format. Use the WSDL-first modes (`wsdl_do`, `wsdl_enum`) for vSphere 9 and later.
 
-Managed object generation (`dtm_mo`) and SOAP dispatch generation (`wsdl_vimstub`) are supported as of vSphere 9. MOs require live DynamicTypeManager introspection on first run; snapshots can be cached for offline reruns and CI.
+Managed object generation is supported as of vSphere 9 via pyVmomi: a Python extractor produces a JSON schema snapshot (`esx/pyvmomi-schema-<version>.json`) which the Groovy generator consumes to emit single-class managed objects in the existing yavijava style. SOAP dispatch generation (`wsdl_vimstub`) and data-object/enum generation (`wsdl_do`, `wsdl_enum`) are unchanged.
 
 ## Usage
 
@@ -43,7 +43,7 @@ This would build a jar containing all deps needed to run the app.
 
     --dest is the output directory where generated code will be placed
     --source is the path to the dataobjects file
-    --type is the type of file to generate. Valid values are one of dataobj, fault, enum, wsdl_do, wsdl_enum, wsdl_vimstub, dtm_mo, migrate_mo
+    --type is the type of file to generate. Valid values are one of dataobj, fault, enum, wsdl_do, wsdl_enum, wsdl_vimstub, pyvmomi_audit, pyvmomi_migrate, pyvmomi_mo
     --all sets a flag to generate all data objects found on the source html page. That means new and existing with new properties
 
 ### WSDL-first modes (vSphere 9+)
@@ -75,39 +75,39 @@ The `--source` argument must point at `vim.wsdl`. All XSD files referenced by `v
     java -jar build/libs/yavijava_generator-1.0.jar \
         --type wsdl_vimstub --source esx/vim.wsdl --dest /tmp/gen/
 
-This is a full overwrite each run. The first time you run it against an existing yavijava tree, the writer will skip `VimStub.java` because the hand-written file lacks the generator marker — run `migrate_mo` first to insert the marker (see "Migrating an existing yavijava tree" below).
+This is a full overwrite each run. The first time you run it against an existing yavijava tree, the writer will skip `VimStub.java` because the hand-written file lacks the generator marker — run `pyvmomi_migrate` first to insert the marker (see "Migrating an existing yavijava tree" below).
 
 ### Generating Managed Objects (vSphere 9+)
 
-The `dtm_mo` mode introspects MO schemas (properties, methods, inheritance) via vSphere's internal `DynamicTypeManager` SOAP API. Output uses a **two-class split**: each MO becomes `<MO>Base.java` (auto-generated, fully overwritten each run) plus `<MO>.java` (hand-written subclass, never touched by the generator after first creation).
+Managed objects are generated from a pyVmomi-derived JSON schema snapshot. The schema lives at `esx/pyvmomi-schema-<version>.json` and is checked into the repo; the Groovy generator never talks to a live vSphere.
 
-Live ESXi (writes a snapshot for next time):
+To regenerate the schema (only when VMware ships a new vSphere release):
 
-    export YAVIJAVA_ESX_PASS=...
-    java -jar build/libs/yavijava_generator-1.0.jar \
-        --type dtm_mo --dest /tmp/gen/ \
-        --esx-url https://10.0.0.5/sdk --esx-user root \
-        --dtm-snapshot esx/dtm-snapshot-9.0.0.json
+    pip install --upgrade pyvmomi
+    python3 tools/extract_pyvmomi_schema.py > esx/pyvmomi-schema-9.0.0.json
 
-Offline reuse (no ESXi needed):
+To generate MO Java files from a snapshot:
 
-    java -jar build/libs/yavijava_generator-1.0.jar \
-        --type dtm_mo --dest /tmp/gen/ \
-        --dtm-snapshot esx/dtm-snapshot-9.0.0.json
+    java -jar build/libs/yavijava_generator-1.1-all.jar \
+        --type pyvmomi_mo --dest /path/to/yavijava/src/main/java/com/vmware/vim25/mo/ \
+        --schema esx/pyvmomi-schema-9.0.0.json
 
-Flag reference:
+The generator emits one `<MO>.java` per type, single-class style. Each file contains a `// auto generated using yavijava_generator` marker plus two preserved-content fences for hand-written customizations:
 
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--esx-url` | (none) | ESXi SDK URL, e.g., `https://10.0.0.5/sdk` |
-| `--esx-user` | `root` | ESXi username |
-| `--esx-pass` | `$YAVIJAVA_ESX_PASS` | ESXi password (env-fallback to keep it out of shell history) |
-| `--esx-strict-cert` | off | Verify the server cert; default off matches a fresh-install ESXi |
-| `--dtm-snapshot` | (none) | JSON snapshot path. Read-only when no `--esx-url`; written when both are present |
+    /* ===== BEGIN custom imports (preserved by regenerator) ===== */
+    /* ===== END custom imports ===== */
 
-The generator emits `<MO>.java` subclass stubs only when the file doesn't already exist. If you need to add custom helpers (e.g., the `getRecentTasks()` rename pattern in `ManagedEntity`), put them in the subclass — it's never touched by the generator after first creation. Java method dispatch ensures subclass methods override Base methods.
+and
 
-Snapshots are deterministic and check-in friendly. Committing `dtm-snapshot-<version>.json` to your repo means CI can regenerate without ESXi access.
+    /* ===== BEGIN custom (preserved by regenerator) ===== */
+    public boolean isPoweredOn() {
+        return getRuntime().getPowerState() == VirtualMachinePowerState.poweredOn;
+    }
+    /* ===== END custom ===== */
+
+Bytes between the fences are preserved across regenerations. Code outside the fences is generator-owned.
+
+The four files yavijava treats as hand-written infrastructure (`ManagedObject`, `ManagedEntity`, `ExtensibleManagedObject`, `View`) are skipped by the generator regardless of marker.
 
 ## Obtaining the WSDL files
 
@@ -129,12 +129,6 @@ They can also be found:
 - In the VMware vSphere Management SDK download (from developer.vmware.com)
 - On an ESXi host's filesystem at `/usr/lib/vmware/hostd/docRoot/sdk/`
 
-## Obtaining DTM access
-
-Any standalone ESXi exposes the internal `DynamicTypeManager` (DTM) SOAP API at `https://<esxi>/sdk` with default root credentials. The generator skips certificate verification by default — pass `--esx-strict-cert` only when targeting a properly-signed vCenter.
-
-DTM is an internal/non-public VMware API but stable across the vSphere versions yavijava targets. PBM/SPBM coverage is deferred until vCenter access and `pbm.wsdl` are available — see `docs/superpowers/2026-04-23-managed-object-generation-design.md` for context.
-
 ## Marker mechanism — safe regeneration
 
 Every generated file contains the comment:
@@ -150,27 +144,32 @@ This means the generator can run directly against the yavijava source tree witho
 
 ## Migrating an existing yavijava tree
 
-The 133 hand-written MO files in yavijava predate the two-class split and lack the generator marker. The `migrate_mo` mode is a one-time refactor:
+The 133 existing hand-written MO files in yavijava predate the regeneration pipeline. Bringing them under regeneration is a three-command sequence:
 
-    java -jar build/libs/yavijava_generator-1.0.jar \
-        --type migrate_mo --yavijava-src /path/to/yavijava/src/main/java
+1. **Audit** — read-only report of which MOs contain custom (non-auto-generatable) members:
 
-For each `com/vmware/vim25/mo/<MO>.java`:
+       java -jar build/libs/yavijava_generator-1.1-all.jar \
+           --type pyvmomi_audit \
+           --schema esx/pyvmomi-schema-9.0.0.json \
+           --yavijava-src /path/to/yavijava/src/main/java
 
-- Writes `<MO>.java.bak` as a backup.
-- Splits the class into `<MO>Base.java` (generated, marker inserted, contains all auto-generatable members) and `<MO>.java` (rewritten, `extends <MO>Base`, contains constructor + any custom members the tool couldn't classify as boilerplate).
-- Compiles the result with `javac` to verify it builds; if compilation fails, restores the original file from `.bak` and aborts with the error.
+2. **Migrate** — for each schema-listed MO with an existing file: parse, leave auto-generatable members in place, relocate any custom members into a `BEGIN custom (preserved by regenerator)` fence at the bottom, prepend the generator marker:
 
-Also rewrites `com/vmware/vim25/ws/VimStub.java` to insert the generator marker directly after the `package` statement — this unlocks `wsdl_vimstub` to overwrite the file on subsequent runs.
+       java -jar build/libs/yavijava_generator-1.1-all.jar \
+           --type pyvmomi_migrate \
+           --schema esx/pyvmomi-schema-9.0.0.json \
+           --yavijava-src /path/to/yavijava/src/main/java
 
-The migration is idempotent: re-running detects already-migrated files (those that `extends <ClassName>Base`) and skips them. Backup files (`.bak`) are left in place for manual review; clean them up when satisfied:
+   Idempotent — already-migrated files (with marker + fence) are skipped.
 
-    find /path/to/yavijava/src/main/java -name '*.java.bak' -delete
+3. **Regenerate** — from this point forward, every MO is regeneratable:
 
-Files left untouched (yavijava-side infrastructure with custom logic the generator doesn't describe):
-`ManagedObject.java`, `ManagedEntity.java`, `ExtensibleManagedObject.java`, `View.java`.
+       java -jar build/libs/yavijava_generator-1.1-all.jar \
+           --type pyvmomi_mo \
+           --schema esx/pyvmomi-schema-9.0.0.json \
+           --dest /path/to/yavijava/src/main/java/com/vmware/vim25/mo/
 
-After migration, run `wsdl_vimstub` and `dtm_mo` against the same vSphere version snapshot. The result should produce only "ordering churn" — the migration preserves source ordering of methods and throws clauses, while the generators emit them in deterministic alphabetical order. This expected one-time diff is best committed separately so the migration commit and the reorder commit each review cleanly.
+The migrate step is the only moment the generator deliberately bypasses the `WriteJavaClass` marker check (the file gains the marker in the same write).
 
 ## Regeneration workflow for new vSphere releases
 
@@ -186,11 +185,8 @@ After migration, run `wsdl_vimstub` and `dtm_mo` against the same vSphere versio
     # 3. Generate VimStub
     ./gradlew run --args="--source esx/vim.wsdl --dest /tmp/yavijava-gen/ --type wsdl_vimstub --all"
 
-    # 4. Capture a fresh DTM snapshot from the ESXi host (or skip if reusing an existing snapshot)
-    export YAVIJAVA_ESX_PASS=...
-    ./gradlew run --args="--type dtm_mo --dest /tmp/yavijava-gen/mo/ \
-        --esx-url https://<esxi>/sdk --esx-user root \
-        --dtm-snapshot esx/dtm-snapshot-9.0.0.json"
+    # 4. Regenerate managed objects from the pyVmomi snapshot
+    ./gradlew run --args="--type pyvmomi_mo --dest /tmp/yavijava-gen/mo/ --schema esx/pyvmomi-schema-9.0.0.json"
 
     # 5. Diff against current yavijava sources to preview changes
     diff -rq /tmp/yavijava-gen/ /path/to/yavijava/src/main/java/com/vmware/vim25/

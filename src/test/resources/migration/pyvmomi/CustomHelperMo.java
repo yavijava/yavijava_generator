@@ -10,10 +10,7 @@ public class CustomHelperMo extends ManagedEntity {
     public String getName() {
         return (String) getCurrentProperty("name");
     }
-    public Task[] getRecentTasks() {
-        return getTasks("recentTask");
-    }
-    public boolean getAlarmActionEabled() {
+    public boolean getAlarmActionEnabled() {
         Boolean aae = (Boolean) getCurrentProperty("alarmActionsEnabled");
         return aae == null ? false : aae.booleanValue();
     }

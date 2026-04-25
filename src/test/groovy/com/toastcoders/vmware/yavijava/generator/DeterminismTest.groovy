@@ -30,15 +30,13 @@ class DeterminismTest {
     }
 
     @Test
-    void testDtmManagedObjectByteIdenticalBetweenRuns() {
-        new DTMManagedObjectGenerator(
-            "src/test/resources/dtm/sample-mo-types.json",
-            run1.absolutePath + File.separator,
-            null, null, null, false).generate(true, "com.vmware.vim25.mo", [:])
-        new DTMManagedObjectGenerator(
-            "src/test/resources/dtm/sample-mo-types.json",
-            run2.absolutePath + File.separator,
-            null, null, null, false).generate(true, "com.vmware.vim25.mo", [:])
+    void testPyvmomiManagedObjectByteIdenticalBetweenRuns() {
+        new PyvmomiManagedObjectGenerator(
+            "src/test/resources/pyvmomi/sample-schema.json",
+            run1.absolutePath + File.separator).generate(true, "com.vmware.vim25.mo", [:])
+        new PyvmomiManagedObjectGenerator(
+            "src/test/resources/pyvmomi/sample-schema.json",
+            run2.absolutePath + File.separator).generate(true, "com.vmware.vim25.mo", [:])
 
         assertSameDigests(run1, run2)
     }
