@@ -122,16 +122,18 @@ public class VimStub {
 
     private static String stripXsd(String t) {
         switch (t) {
-            case "xsd:string":  return "String"
-            case "xsd:int":     return "int"
-            case "xsd:long":    return "long"
-            case "xsd:boolean": return "boolean"
-            case "xsd:short":   return "short"
-            case "xsd:byte":    return "byte"
-            case "xsd:float":   return "float"
-            case "xsd:double":  return "double"
-            case "xsd:dateTime":return "Calendar"
-            case "xsd:anyType": return "Object"
+            case "xsd:string":      return "String"
+            case "xsd:int":         return "int"
+            case "xsd:long":        return "long"
+            case "xsd:boolean":     return "boolean"
+            case "xsd:short":       return "short"
+            case "xsd:byte":        return "byte"
+            case "xsd:float":       return "float"
+            case "xsd:double":      return "double"
+            case "xsd:dateTime":    return "Calendar"
+            case "xsd:anyType":     return "Object"
+            case "xsd:anyURI":      return "String"
+            case "xsd:base64Binary":return "byte[]"
             default: return t.contains(":") ? t.split(":", 2)[1] : t
         }
     }

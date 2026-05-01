@@ -11,6 +11,7 @@ class FullWSDLDataObjectParser {
         base64Binary: 'byte[]',
         dateTime    : 'Calendar',
         anyType     : 'Object',
+        anyURI      : 'String',
         boolean     : 'boolean',
         int         : 'int',
         long        : 'long',

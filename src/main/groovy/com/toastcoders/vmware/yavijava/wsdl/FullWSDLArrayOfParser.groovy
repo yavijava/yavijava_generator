@@ -6,6 +6,21 @@ import com.toastcoders.vmware.yavijava.data.Property
 
 class FullWSDLArrayOfParser {
 
+    private static final Map<String, String> PRIMITIVE_TYPE_MAP = [
+        string      : 'String',
+        base64Binary: 'byte[]',
+        dateTime    : 'Calendar',
+        anyType     : 'Object',
+        anyURI      : 'String',
+        boolean     : 'boolean',
+        int         : 'int',
+        long        : 'long',
+        float       : 'float',
+        double      : 'double',
+        short       : 'short',
+        byte        : 'byte',
+    ].asImmutable()
+
     List<DataObject> parse(List<GPathResult> schemas) {
         List<DataObject> result = []
         schemas.each { schema ->
@@ -25,7 +40,8 @@ class FullWSDLArrayOfParser {
 
                 def el = seqElement[0]
                 String elementName = el.'@name'.text()
-                String elementType = el.'@type'.text().split(':')[-1]
+                String rawElementType = el.'@type'.text().split(':')[-1]
+                String elementType = PRIMITIVE_TYPE_MAP[rawElementType] ?: rawElementType
                 obj.objProperties << new Property(elementName, elementType)
 
                 result << obj
