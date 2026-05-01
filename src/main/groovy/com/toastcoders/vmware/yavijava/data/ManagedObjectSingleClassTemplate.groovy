@@ -26,6 +26,7 @@ class ManagedObjectSingleClassTemplate {
         sb << MARKER << "\n"
         sb << "package com.vmware.vim25.mo;\n\n"
         sb << "import com.vmware.vim25.*;\n"
+        sb << "import com.vmware.vim25.mo.util.MorUtil;\n"
         sb << "import java.rmi.RemoteException;\n"
         if (usesCalendar(mo)) sb << "import java.util.Calendar;\n"
         sb << "\n"
@@ -79,16 +80,21 @@ class ManagedObjectSingleClassTemplate {
         String returnJava = mapReturn(m)
         String paramsSig  = m.params.collect { paramSig(it) }.join(", ")
         String throws_    = renderThrows(m)
-        sb << "    public ${returnJava} ${m.name}(${paramsSig}) throws ${throws_} {\n"
+        // Yavijava methods + VimStub methods are lowerCamelCase; pyVmomi exposes WSDL-cased names
+        String methodName = lowerCamelCase(m.name)
+        sb << "    public ${returnJava} ${methodName}(${paramsSig}) throws ${throws_} {\n"
         List<String> stubArgs = ["getMOR()"]
         m.params.each { p ->
             if (p.isManagedObjectReference && !p.isArray) {
                 stubArgs << "${p.name} == null ? null : ${p.name}.getMOR()"
+            } else if (p.isManagedObjectReference && p.isArray) {
+                // VimStub expects ManagedObjectReference[]; convert from typed MO array
+                stubArgs << "${p.name} == null ? null : MorUtil.createMORs(${p.name})"
             } else {
                 stubArgs << p.name
             }
         }
-        String stubCall = "getVimService().${m.name}(${stubArgs.join(", ")})"
+        String stubCall = "getVimService().${methodName}(${stubArgs.join(", ")})"
         if (m.returnType == "void" || !m.returnType) {
             sb << "        ${stubCall};\n"
         } else if (m.returnIsManagedObjectReference && !m.returnIsArray) {
@@ -119,6 +125,11 @@ class ManagedObjectSingleClassTemplate {
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) return s
         return s[0].toUpperCase() + s.substring(1)
+    }
+
+    private static String lowerCamelCase(String s) {
+        if (s == null || s.isEmpty()) return s
+        return s[0].toLowerCase() + s.substring(1)
     }
 
     private static boolean usesCalendar(PyvmomiManagedObject mo) {

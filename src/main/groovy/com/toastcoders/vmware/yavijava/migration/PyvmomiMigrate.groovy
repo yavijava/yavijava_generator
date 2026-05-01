@@ -66,11 +66,21 @@ class PyvmomiMigrate {
 
         // Capture non-standard imports before clearing them — they'll be relocated to the
         // BEGIN custom imports fence so referenced types still resolve after regen.
+        // Note: JavaParser's ImportDeclaration.nameAsString omits the trailing ".*" for
+        // wildcard imports, so we reconstruct the full form for comparison.
         StringBuilder customImports = new StringBuilder()
-        cu.imports.findAll { !STANDARD_IMPORTS.contains(it.nameAsString) }.each {
+        cu.imports.findAll {
+            String full = it.nameAsString + (it.asterisk ? ".*" : "")
+            !STANDARD_IMPORTS.contains(full)
+        }.each {
             customImports << it.toString()
         }
+        // Replace all imports with the standard set so the migrated file is compilable
+        // even in the intermediate state (before the regenerator runs and rewrites them).
         cu.imports.clear()
+        cu.addImport("com.vmware.vim25", false, true)  // wildcard
+        cu.addImport("java.rmi.RemoteException")
+        cu.addImport("java.util.Calendar")
 
         // Bucket members
         List<BodyDeclaration<?>> autoGen = []
@@ -111,9 +121,15 @@ class PyvmomiMigrate {
             "    ${CUSTOM_END}\n" +
             afterClose
 
-        // Inject custom-imports fence directly after the package statement
-        int pkgEnd = withFence.indexOf(";")
-        // Find the first newline after "package ...;"
+        // Inject custom-imports fence directly after the package statement.
+        // Locate the package declaration line so we don't get fooled by ';' in a
+        // license comment block above it (Steve-Jin yavijava files have one).
+        java.util.regex.Matcher pkgMatcher = (withFence =~ /(?m)^\s*package\s+[\w.]+\s*;/)
+        if (!pkgMatcher.find()) {
+            log.warn("migrate: no package declaration found in ${file.name}; skipping fence insertion")
+            return
+        }
+        int pkgEnd = pkgMatcher.end() - 1  // position of the ';'
         int firstNl = withFence.indexOf("\n", pkgEnd)
         if (firstNl < 0) firstNl = pkgEnd
         String head = withFence.substring(0, firstNl + 1)

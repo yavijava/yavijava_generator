@@ -47,8 +47,15 @@ class FullWSDLOperationParser {
             extractReturn(responseCt, o)
 
             op.fault.each { f ->
-                String name = f.@name.text()
-                if (name && name != "RuntimeFault") o.faults << name
+                String faultName = f.@name.text()
+                if (!faultName) return
+                // Resolve faultName → message → element → underlying complexType.
+                // VMware's WSDL uses element wrappers like <element name="InvalidStateFault" type="vim25:InvalidState"/>;
+                // the Java fault class follows the complexType name (no "Fault" suffix), so resolve through the chain.
+                String faultMsg = stripPrefix(f.@message.text())
+                String element = msgToElement[faultMsg] ?: faultName
+                String javaName = elementsByName[element] ?: element
+                if (javaName != "RuntimeFault") o.faults << javaName
             }
             o.faults << "RuntimeFault"
 
@@ -128,16 +135,18 @@ class FullWSDLOperationParser {
     }
 
     private static final Map<String, String> XSD_TO_JAVA = [
-        "xsd:string"  : "String",
-        "xsd:int"     : "int",
-        "xsd:long"    : "long",
-        "xsd:boolean" : "boolean",
-        "xsd:short"   : "short",
-        "xsd:byte"    : "byte",
-        "xsd:float"   : "float",
-        "xsd:double"  : "double",
-        "xsd:dateTime": "Calendar",
-        "xsd:anyType" : "Object",
+        "xsd:string"      : "String",
+        "xsd:int"         : "int",
+        "xsd:long"        : "long",
+        "xsd:boolean"     : "boolean",
+        "xsd:short"       : "short",
+        "xsd:byte"        : "byte",
+        "xsd:float"       : "float",
+        "xsd:double"      : "double",
+        "xsd:dateTime"    : "Calendar",
+        "xsd:anyType"     : "Object",
+        "xsd:anyURI"      : "String",
+        "xsd:base64Binary": "byte[]",
     ]
 
     private String toJavaType(String xsdType) {

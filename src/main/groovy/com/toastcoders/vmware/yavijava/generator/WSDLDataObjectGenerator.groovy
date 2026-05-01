@@ -83,6 +83,9 @@ class WSDLDataObjectGenerator implements Generator {
         def prop = obj.objProperties[0]
         StringBuilder sb = new StringBuilder()
         sb << ArrayOfTemplate.getPackageName(packageName)
+        if (prop.propType == "Calendar" || prop.propType == "Calendar[]") {
+            sb << "import java.util.Calendar;\n"
+        }
         sb << ArrayOfTemplate.getLicense()
         sb << ArrayOfTemplate.getClassDef(obj.name)
         sb << ArrayOfTemplate.getField(prop.propType, prop.name)
