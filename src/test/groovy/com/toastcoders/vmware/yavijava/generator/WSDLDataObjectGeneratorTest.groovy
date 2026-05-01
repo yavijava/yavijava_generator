@@ -66,7 +66,8 @@ public class WSDLDataObjectGeneratorTest {
     void testArrayOfFileContainsExpectedShape() {
         String content = new File(tempDir, "ArrayOfBatchResult.java").text
         assert content.contains("package com.vmware.vim25")
-        assert content.contains("public class ArrayOfBatchResult {")
+        assert content.contains("public class ArrayOfBatchResult implements java.io.Serializable {")
+        assert content.contains("private static final long serialVersionUID = 1L;")
         assert content.contains("public BatchResult[] BatchResult;")
         assert content.contains("public BatchResult[] getBatchResult()")
         assert content.contains("public BatchResult getBatchResult(int i)")
