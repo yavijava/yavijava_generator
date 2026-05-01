@@ -3,7 +3,8 @@ package com.toastcoders.vmware.yavijava.data
 class ArrayOfTemplate extends BaseTemplate {
 
     static String getClassDef(String name) {
-        "public class ${name} {\n"
+        "public class ${name} implements java.io.Serializable {\n" +
+        "    private static final long serialVersionUID = 1L;\n"
     }
 
     static String getField(String type, String name) {
